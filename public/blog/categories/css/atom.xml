@@ -2,10 +2,10 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
 
   <title><![CDATA[Category: css | Litten's Blog]]></title>
-  <link href="http://litten.github.com/blog/categories/css/atom.xml" rel="self"/>
-  <link href="http://litten.github.com/"/>
-  <updated>2013-09-21T20:50:30+08:00</updated>
-  <id>http://litten.github.com/</id>
+  <link href="http://litten.github.io/blog/categories/css/atom.xml" rel="self"/>
+  <link href="http://litten.github.io/"/>
+  <updated>2013-09-21T22:25:26+08:00</updated>
+  <id>http://litten.github.io/</id>
   <author>
     <name><![CDATA[Litten]]></name>
     
@@ -15,9 +15,9 @@
   
   <entry>
     <title type="html"><![CDATA[有趣的css面试小题目——九宫格(二)]]></title>
-    <link href="http://litten.github.com/blog/2012/12/21/css-jiugongge2/"/>
+    <link href="http://litten.github.io/blog/2012/12/21/css-jiugongge2/"/>
     <updated>2012-12-21T13:54:00+08:00</updated>
-    <id>http://litten.github.com/blog/2012/12/21/css-jiugongge2</id>
+    <id>http://litten.github.io/blog/2012/12/21/css-jiugongge2</id>
     <content type="html"><![CDATA[<p>书接上回，<a href="http://litten.github.com/blog/blog/2012/12/14/css-jiugongge/">上回在这</a>。</p>
 
 <pre><code>9个元素，每个50*50px，排成九宫格
@@ -165,9 +165,9 @@ html：</p>
   
   <entry>
     <title type="html"><![CDATA[分享一个IE6，7的CSS hack bug]]></title>
-    <link href="http://litten.github.com/blog/2012/12/17/share-a-css-hack/"/>
+    <link href="http://litten.github.io/blog/2012/12/17/share-a-css-hack/"/>
     <updated>2012-12-17T19:43:00+08:00</updated>
-    <id>http://litten.github.com/blog/2012/12/17/share-a-css-hack</id>
+    <id>http://litten.github.io/blog/2012/12/17/share-a-css-hack</id>
     <content type="html"><![CDATA[<h3>一、分享一个IE6，7的css hack bug。</h3>
 
 <p><img src="/assets/blogImg/css_hack.jpg" alt="css hack" /></p>
@@ -237,9 +237,9 @@ html:</p>
   
   <entry>
     <title type="html"><![CDATA[有趣的css面试小题目——九宫格(一)]]></title>
-    <link href="http://litten.github.com/blog/2012/12/14/css-jiugongge/"/>
+    <link href="http://litten.github.io/blog/2012/12/14/css-jiugongge/"/>
     <updated>2012-12-14T19:15:00+08:00</updated>
-    <id>http://litten.github.com/blog/2012/12/14/css-jiugongge</id>
+    <id>http://litten.github.io/blog/2012/12/14/css-jiugongge</id>
     <content type="html"><![CDATA[<p>前段时间，我的 leader Henry在群里面分享了一道<a href="http://www.etao.com/">一淘</a>的面试题。         题目非常的有趣，忙完前阵的工作之后突然记起，也尝试做了一下。</p>
 
 <pre><code>9个元素，每个50*50px，排成九宫格

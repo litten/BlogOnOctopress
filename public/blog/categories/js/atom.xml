@@ -2,10 +2,10 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
 
   <title><![CDATA[Category: js | Litten's Blog]]></title>
-  <link href="http://litten.github.com/blog/categories/js/atom.xml" rel="self"/>
-  <link href="http://litten.github.com/"/>
-  <updated>2013-09-21T20:50:30+08:00</updated>
-  <id>http://litten.github.com/</id>
+  <link href="http://litten.github.io/blog/categories/js/atom.xml" rel="self"/>
+  <link href="http://litten.github.io/"/>
+  <updated>2013-09-21T22:25:26+08:00</updated>
+  <id>http://litten.github.io/</id>
   <author>
     <name><![CDATA[Litten]]></name>
     
@@ -15,9 +15,9 @@
   
   <entry>
     <title type="html"><![CDATA[网易“聚合阅读”布局的实现]]></title>
-    <link href="http://litten.github.com/blog/2013/05/03/my-news-reader-box/"/>
+    <link href="http://litten.github.io/blog/2013/05/03/my-news-reader-box/"/>
     <updated>2013-05-03T10:55:00+08:00</updated>
-    <id>http://litten.github.com/blog/2013/05/03/my-news-reader-box</id>
+    <id>http://litten.github.io/blog/2013/05/03/my-news-reader-box</id>
     <content type="html"><![CDATA[<p><img src="/assets/blogImg/myReader0.jpg" alt="聚合阅读" /></p>
 
 <p>网易<a href="http://news.tag.163.com/">聚合阅读</a>的出现的确让人惊艳了一下。流畅的交互,使碎片化的新闻资讯像报纸一样摊在眼前,这是信息大爆炸的时代产物。不管你能不能接受这种新阅读形式，事实上，每天越来越多的新闻层出不穷，还没被人看到就已成为了“旧闻”。回归报纸的版面设计，堆叠新闻模块，让用户告别一条接一条整齐的新闻链接，而是在一个版面上提供更多的信息，不失为一种尝试。</p>
@@ -33,7 +33,7 @@
 
 
 
-<iframe id="demoIframe" src="http://litten.github.com/assets/demo/my_news_reader/index.html" width="600" height="420" scrolling="no"></iframe>
+<iframe id="demoIframe" src="http://litten.github.io/assets/demo/my_news_reader/index.html" width="600" height="420" scrolling="no"></iframe>
 
 
 <h2><strong>一.怎样定义格子对象</strong></h2>
@@ -239,9 +239,9 @@ function _cutGrid(tag, funcJudge) {
   
   <entry>
     <title type="html"><![CDATA[生产者-消费者模型的coffeescript实现]]></title>
-    <link href="http://litten.github.com/blog/2012/12/24/coffee-pc/"/>
+    <link href="http://litten.github.io/blog/2012/12/24/coffee-pc/"/>
     <updated>2012-12-24T23:51:00+08:00</updated>
-    <id>http://litten.github.com/blog/2012/12/24/coffee-pc</id>
+    <id>http://litten.github.io/blog/2012/12/24/coffee-pc</id>
     <content type="html"><![CDATA[<p>这两天一直在看coffeescript相关的东西，也帮一个朋友搞了个生产者-消费者模型的C语言实现。想到还没用coffeescript真正意义上写过程序，那就尝试做一下吧。</p>
 
 <p>其实<a href="http://read.douban.com/ebook/198648/">《CoffeeScript小书》</a>是暑假实习时就买了，一直比较向往着函数式编程却拖延了很久没行动起来。小书只有几十页，本是github上一个开源的项目，我喜欢这种轻巧的文字。语法部分看下来，再看下类与继承，只花了半天的时间，而且心情非常愉悦，然后就可以开始我菜鸟的第一次试飞了。</p>
@@ -253,7 +253,7 @@ function _cutGrid(tag, funcJudge) {
 
 <h2><strong>demo，可尝试点击“生产”“消费”按钮</strong></h2>
 
-<iframe src="http://litten.github.com/assets/demo/coffee_pc_demo/pro-con.html" width="780" height="336" scrolling="no"></iframe>
+<iframe src="http://litten.github.io/assets/demo/coffee_pc_demo/pro-con.html" width="780" height="336" scrolling="no"></iframe>
 
 
 <h2><strong>litten如是想：</strong></h2>

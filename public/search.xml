@@ -3,91 +3,91 @@
 	
 	<article>
 		<title>网易“聚合阅读”布局的实现</title>
-		<url>http://litten.github.com/blog/2013/05/03/my-news-reader-box/</url>
+		<url>http://litten.github.io/blog/2013/05/03/my-news-reader-box/</url>
 		<date>2013-05-03</date>
 		<tag>js</tag>
 	</article>
 	
 	<article>
 		<title>裁缝的工具，天气精灵，匠人与万能胶水</title>
-		<url>http://litten.github.com/blog/2013/04/30/my-fairy-tale1/</url>
+		<url>http://litten.github.io/blog/2013/04/30/my-fairy-tale1/</url>
 		<date>2013-04-30</date>
 		<tag>随笔</tag>
 	</article>
 	
 	<article>
 		<title>毕业衫的设计初稿以及设计这件小事</title>
-		<url>http://litten.github.com/blog/2013/04/15/graduation-shirt-design/</url>
+		<url>http://litten.github.io/blog/2013/04/15/graduation-shirt-design/</url>
 		<date>2013-04-15</date>
 		<tag>设计</tag>
 	</article>
 	
 	<article>
 		<title>模式应用小分享——中介者模式(mediator)</title>
-		<url>http://litten.github.com/blog/2013/01/02/mediator-model/</url>
+		<url>http://litten.github.io/blog/2013/01/02/mediator-model/</url>
 		<date>2013-01-02</date>
 		<tag>coffeescript,模式</tag>
 	</article>
 	
 	<article>
 		<title>当我想用css3实现一个动作类库</title>
-		<url>http://litten.github.com/blog/2012/12/31/css3-animater/</url>
+		<url>http://litten.github.io/blog/2012/12/31/css3-animater/</url>
 		<date>2012-12-31</date>
 		<tag>css3</tag>
 	</article>
 	
 	<article>
 		<title>生产者-消费者模型的coffeescript实现</title>
-		<url>http://litten.github.com/blog/2012/12/24/coffee-pc/</url>
+		<url>http://litten.github.io/blog/2012/12/24/coffee-pc/</url>
 		<date>2012-12-24</date>
 		<tag>coffeescript,js</tag>
 	</article>
 	
 	<article>
 		<title>有趣的css面试小题目——九宫格(二)</title>
-		<url>http://litten.github.com/blog/2012/12/21/css-jiugongge2/</url>
+		<url>http://litten.github.io/blog/2012/12/21/css-jiugongge2/</url>
 		<date>2012-12-21</date>
 		<tag>css</tag>
 	</article>
 	
 	<article>
 		<title>圣诞到了，帮修改一个头像</title>
-		<url>http://litten.github.com/blog/2012/12/19/a-chrismas-ico/</url>
+		<url>http://litten.github.io/blog/2012/12/19/a-chrismas-ico/</url>
 		<date>2012-12-19</date>
 		<tag>杂谈,设计</tag>
 	</article>
 	
 	<article>
 		<title>记刺客信条 - Assassin&#8217;s Creed</title>
-		<url>http://litten.github.com/blog/2012/12/18/assassins-creed/</url>
+		<url>http://litten.github.io/blog/2012/12/18/assassins-creed/</url>
 		<date>2012-12-18</date>
 		<tag>游戏,随笔</tag>
 	</article>
 	
 	<article>
 		<title>分享一个IE6，7的CSS hack bug</title>
-		<url>http://litten.github.com/blog/2012/12/17/share-a-css-hack/</url>
+		<url>http://litten.github.io/blog/2012/12/17/share-a-css-hack/</url>
 		<date>2012-12-17</date>
 		<tag>css</tag>
 	</article>
 	
 	<article>
 		<title>Blog主题更新-1.0</title>
-		<url>http://litten.github.com/blog/2012/12/16/theme-update1-dot-0/</url>
+		<url>http://litten.github.io/blog/2012/12/16/theme-update1-dot-0/</url>
 		<date>2012-12-16</date>
 		<tag>主题</tag>
 	</article>
 	
 	<article>
 		<title>有趣的css面试小题目——九宫格(一)</title>
-		<url>http://litten.github.com/blog/2012/12/14/css-jiugongge/</url>
+		<url>http://litten.github.io/blog/2012/12/14/css-jiugongge/</url>
 		<date>2012-12-14</date>
 		<tag>css</tag>
 	</article>
 	
 	<article>
 		<title>Hello World</title>
-		<url>http://litten.github.com/blog/2012/12/13/hello-world/</url>
+		<url>http://litten.github.io/blog/2012/12/13/hello-world/</url>
 		<date>2012-12-13</date>
 		<tag>octopress,杂谈</tag>
 	</article>

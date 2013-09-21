@@ -2,10 +2,10 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
 
   <title><![CDATA[Category: 随笔 | Litten's Blog]]></title>
-  <link href="http://litten.github.com/blog/categories/sui-bi/atom.xml" rel="self"/>
-  <link href="http://litten.github.com/"/>
-  <updated>2013-09-21T20:50:30+08:00</updated>
-  <id>http://litten.github.com/</id>
+  <link href="http://litten.github.io/blog/categories/sui-bi/atom.xml" rel="self"/>
+  <link href="http://litten.github.io/"/>
+  <updated>2013-09-21T22:25:26+08:00</updated>
+  <id>http://litten.github.io/</id>
   <author>
     <name><![CDATA[Litten]]></name>
     
@@ -15,9 +15,9 @@
   
   <entry>
     <title type="html"><![CDATA[裁缝的工具，天气精灵，匠人与万能胶水]]></title>
-    <link href="http://litten.github.com/blog/2013/04/30/my-fairy-tale1/"/>
+    <link href="http://litten.github.io/blog/2013/04/30/my-fairy-tale1/"/>
     <updated>2013-04-30T01:36:00+08:00</updated>
-    <id>http://litten.github.com/blog/2013/04/30/my-fairy-tale1</id>
+    <id>http://litten.github.io/blog/2013/04/30/my-fairy-tale1</id>
     <content type="html"><![CDATA[<p><strong>【裁缝的工具】</strong></p>
 
 <p>用剪刀来裁剪，用针线来缝补是裁缝最平常的工作。来找他的客人络绎不绝，因为他拥有神乎其技的手艺。裁缝的技术，绝不仅仅体现在布料上。每天早上，在露珠尚未蒸发的时候，他都会用剪刀把最温润的阳光剪下三米，细心的捆扎好，到了晚上，他再拿出针线把阳光缝到屋顶上以供照明。裁缝说这阳光里还能听到百灵鸟的叫声。午后小憩，他习惯将两块小巧精致的布料塞在耳朵上，那是他去年旅游时裁剪下来的音乐。</p>
@@ -53,9 +53,9 @@
   
   <entry>
     <title type="html"><![CDATA[记刺客信条 - Assassin's Creed]]></title>
-    <link href="http://litten.github.com/blog/2012/12/18/assassins-creed/"/>
+    <link href="http://litten.github.io/blog/2012/12/18/assassins-creed/"/>
     <updated>2012-12-18T23:23:00+08:00</updated>
-    <id>http://litten.github.com/blog/2012/12/18/assassins-creed</id>
+    <id>http://litten.github.io/blog/2012/12/18/assassins-creed</id>
     <content type="html"><![CDATA[<p><img src="/assets/blogImg/ckxt0.jpg" alt="刺客信条-兄弟会海报" /></p>
 
 <blockquote><p>Nothing is true, everything is permitted.万物皆虚，万事皆允。</p></blockquote>

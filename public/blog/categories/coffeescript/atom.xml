@@ -2,10 +2,10 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
 
   <title><![CDATA[Category: coffeescript | Litten's Blog]]></title>
-  <link href="http://litten.github.com/blog/categories/coffeescript/atom.xml" rel="self"/>
-  <link href="http://litten.github.com/"/>
-  <updated>2013-09-21T20:50:30+08:00</updated>
-  <id>http://litten.github.com/</id>
+  <link href="http://litten.github.io/blog/categories/coffeescript/atom.xml" rel="self"/>
+  <link href="http://litten.github.io/"/>
+  <updated>2013-09-21T22:25:26+08:00</updated>
+  <id>http://litten.github.io/</id>
   <author>
     <name><![CDATA[Litten]]></name>
     
@@ -15,9 +15,9 @@
   
   <entry>
     <title type="html"><![CDATA[模式应用小分享——中介者模式(mediator)]]></title>
-    <link href="http://litten.github.com/blog/2013/01/02/mediator-model/"/>
+    <link href="http://litten.github.io/blog/2013/01/02/mediator-model/"/>
     <updated>2013-01-02T12:36:00+08:00</updated>
-    <id>http://litten.github.com/blog/2013/01/02/mediator-model</id>
+    <id>http://litten.github.io/blog/2013/01/02/mediator-model</id>
     <content type="html"><![CDATA[<p><img src="/assets/blogImg/mediator1.jpg" alt="实况足球" /></p>
 
 <blockquote><p>你需要一种设计模式，一定是哪里出问题了。这问题是指语言天生缺陷，不得不去寻找一种通用的解决方案。</p></blockquote>
@@ -39,7 +39,7 @@
 
 <h2><strong>一个例子</strong></h2>
 
-<iframe id="demoIframe" src="http://litten.github.com/assets/demo/mediator/demo.html" width="500" height="314" scrolling="no"></iframe>
+<iframe id="demoIframe" src="http://litten.github.io/assets/demo/mediator/demo.html" width="500" height="314" scrolling="no"></iframe>
 
 
 <p>或者点这里弹出看<a href="/assets/demo/mediator/demo.html">demo</a>       <br/>
@@ -130,9 +130,9 @@ window.onkeypress = mediator.keypress
   
   <entry>
     <title type="html"><![CDATA[生产者-消费者模型的coffeescript实现]]></title>
-    <link href="http://litten.github.com/blog/2012/12/24/coffee-pc/"/>
+    <link href="http://litten.github.io/blog/2012/12/24/coffee-pc/"/>
     <updated>2012-12-24T23:51:00+08:00</updated>
-    <id>http://litten.github.com/blog/2012/12/24/coffee-pc</id>
+    <id>http://litten.github.io/blog/2012/12/24/coffee-pc</id>
     <content type="html"><![CDATA[<p>这两天一直在看coffeescript相关的东西，也帮一个朋友搞了个生产者-消费者模型的C语言实现。想到还没用coffeescript真正意义上写过程序，那就尝试做一下吧。</p>
 
 <p>其实<a href="http://read.douban.com/ebook/198648/">《CoffeeScript小书》</a>是暑假实习时就买了，一直比较向往着函数式编程却拖延了很久没行动起来。小书只有几十页，本是github上一个开源的项目，我喜欢这种轻巧的文字。语法部分看下来，再看下类与继承，只花了半天的时间，而且心情非常愉悦，然后就可以开始我菜鸟的第一次试飞了。</p>
@@ -144,7 +144,7 @@ window.onkeypress = mediator.keypress
 
 <h2><strong>demo，可尝试点击“生产”“消费”按钮</strong></h2>
 
-<iframe src="http://litten.github.com/assets/demo/coffee_pc_demo/pro-con.html" width="780" height="336" scrolling="no"></iframe>
+<iframe src="http://litten.github.io/assets/demo/coffee_pc_demo/pro-con.html" width="780" height="336" scrolling="no"></iframe>
 
 
 <h2><strong>litten如是想：</strong></h2>

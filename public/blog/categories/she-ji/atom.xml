@@ -2,10 +2,10 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
 
   <title><![CDATA[Category: 设计 | Litten's Blog]]></title>
-  <link href="http://litten.github.com/blog/categories/she-ji/atom.xml" rel="self"/>
-  <link href="http://litten.github.com/"/>
-  <updated>2013-09-21T20:50:30+08:00</updated>
-  <id>http://litten.github.com/</id>
+  <link href="http://litten.github.io/blog/categories/she-ji/atom.xml" rel="self"/>
+  <link href="http://litten.github.io/"/>
+  <updated>2013-09-21T22:25:26+08:00</updated>
+  <id>http://litten.github.io/</id>
   <author>
     <name><![CDATA[Litten]]></name>
     
@@ -15,9 +15,9 @@
   
   <entry>
     <title type="html"><![CDATA[毕业衫的设计初稿以及设计这件小事]]></title>
-    <link href="http://litten.github.com/blog/2013/04/15/graduation-shirt-design/"/>
+    <link href="http://litten.github.io/blog/2013/04/15/graduation-shirt-design/"/>
     <updated>2013-04-15T10:36:00+08:00</updated>
-    <id>http://litten.github.com/blog/2013/04/15/graduation-shirt-design</id>
+    <id>http://litten.github.io/blog/2013/04/15/graduation-shirt-design</id>
     <content type="html"><![CDATA[<p><img src="/assets/blogImg/bys0.jpg" alt="乔治·伯恩斯，美国著名喜剧演员，八十高龄时夺得了奥斯卡奖" /></p>
 
 <blockquote><p>“宁愿失败地做你爱做的事情，也不要成功地做你恨做的事情。” （I honestly think it is better to be a failure at something you love than to be a success at something you hate.） —— George Burns</p></blockquote>
@@ -45,9 +45,9 @@
   
   <entry>
     <title type="html"><![CDATA[圣诞到了，帮修改一个头像]]></title>
-    <link href="http://litten.github.com/blog/2012/12/19/a-chrismas-ico/"/>
+    <link href="http://litten.github.io/blog/2012/12/19/a-chrismas-ico/"/>
     <updated>2012-12-19T14:48:00+08:00</updated>
-    <id>http://litten.github.com/blog/2012/12/19/a-chrismas-ico</id>
+    <id>http://litten.github.io/blog/2012/12/19/a-chrismas-ico</id>
     <content type="html"><![CDATA[<p><img src="/assets/blogImg/xmas_ico0.jpg" alt="ico原来的样子" /></p>
 
 <blockquote><p>帮忙把这只狐狸塞到圣诞袜子里或者带上圣诞帽~~~~ ——鱼头</p></blockquote>
