@@ -1,0 +1,1243 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Litten's Blog]]></title>
+  <link href="http://litten.github.io/atom.xml" rel="self"/>
+  <link href="http://litten.github.io/"/>
+  <updated>2013-09-21T22:27:25+08:00</updated>
+  <id>http://litten.github.io/</id>
+  <author>
+    <name><![CDATA[Litten]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[网易“聚合阅读”布局的实现]]></title>
+    <link href="http://litten.github.io/blog/2013/05/03/my-news-reader-box/"/>
+    <updated>2013-05-03T10:55:00+08:00</updated>
+    <id>http://litten.github.io/blog/2013/05/03/my-news-reader-box</id>
+    <content type="html"><![CDATA[<p><img src="http://litten.github.io/assets/blogImg/myReader0.jpg" alt="聚合阅读" /></p>
+
+<p>网易<a href="http://news.tag.163.com/">聚合阅读</a>的出现的确让人惊艳了一下。流畅的交互,使碎片化的新闻资讯像报纸一样摊在眼前,这是信息大爆炸的时代产物。不管你能不能接受这种新阅读形式，事实上，每天越来越多的新闻层出不穷，还没被人看到就已成为了“旧闻”。回归报纸的版面设计，堆叠新闻模块，让用户告别一条接一条整齐的新闻链接，而是在一个版面上提供更多的信息，不失为一种尝试。</p>
+
+<p>而抛去产品的层面，从前端方向来看，“聚合阅读”也有许多值得学习的地方。这几天研究了一下源码，谈谈它随机布局的实现，以及一些优化的措施。</p>
+
+<h2><strong>demo</strong></h2>
+
+<p>点击按钮可以改变布局：</p>
+
+<!--more-->
+
+
+
+
+<iframe id="demoIframe" src="http://litten.github.io/assets/demo/my_news_reader/index.html" width="600" height="420" scrolling="no"></iframe>
+
+
+<h2><strong>一.怎样定义格子对象</strong></h2>
+
+<p>每个格子对象，都至少应该有这5个属性：    <br/>
+left：距离左边界的位置       <br/>
+top：距离上边界的位置         <br/>
+width：格子宽度           <br/>
+height：格子高度          <br/>
+background：格子颜色</p>
+
+<p>逐个去定义对象无疑是愚蠢的：</p>
+
+<pre><code>function Block(o){
+    return{
+        left: o.left,
+        top: o.top,
+        width: o.width,
+        height: o.height,
+        bg: o.bg
+    }
+}
+var block1 = new Block({
+    left: 0,
+    top: 0,
+    width: 50,
+    height: 50,
+    bg: "#3f3"
+});
+var block2 = …
+…
+var block37 = …
+</code></pre>
+
+<p>这样不仅不利于后期维护，而且构造格子的嵌套关系也相对麻烦。</p>
+
+<p>网易的做法是使用“交替切割”的方式来做：       <br/>
+1. 将大块先切成两列。       <br/>
+2. 左列（红色部分）再切成三行，右列（褐，黄，蓝部分）也切成三行。
+3. 对形成的6个小块，再进行列的切割</p>
+
+<p>整个做法就是“列-行-列-行-……”这样的交替切割。所以它的对象是这样设置的,其中random属性可以约定同级的cols或rows是否可以随机变换位置，width和height的值是规定一个父级块的分割比例。其设置的形式例如（例子与demo的设定无关）：</p>
+
+<pre><code>window.tagConfig.pageLayout = {
+    top: 0,
+    left: 0,
+    width: 100,
+    height: 100,
+    random: !1,
+    cols: [{
+        width: 30,
+        rows: [{
+            height: 40,
+            cols: [{
+                width: 30,
+                rows:[{
+                    height:100
+                }]
+            },{
+                width: 70,
+                rows:[{
+                    height:100
+                }]
+            }]
+        },
+        {
+            height: 30
+        },{
+            height: 30
+        }]
+    },{
+        width: 70,
+        rows:[{
+            height:100
+        }]
+    }]
+}
+</code></pre>
+
+<h2><strong>二.递归调用切割函数</strong></h2>
+
+<pre><code>function _getGrids(tag) {
+    /*domArr是拥有left,top,width,height,bg等属性的所有dom数组，_getGrids的最终目的就是生成这个数组*/
+    var domArr = [],
+    _cutGrid(tag.pageLayout,
+        function(tag) {
+            if (tag.rows || tag.cols) {
+                /*假如子级存在rows或者cols，则递归切割*/
+                _cutGrid(tag, arguments.callee);
+            }
+            else {
+                /*子级不存在rows或者cols，不再进行切割，构造domArr*/
+                …
+                domArr.push(xxx)
+                …
+            }
+        }
+    );
+    return domArr;
+}
+</code></pre>
+
+<h2><strong>三.切割函数</strong></h2>
+
+<p>切割函数挺有意思的，下次想再用一篇文章来详细写一下，在这里仅贴出参考的源码。</p>
+
+<pre><code>/*对象复制函数*/
+function _shadowClone(e) {
+    var t = {};
+    for (var n in e) e.hasOwnProperty(n) &amp;&amp; (t[n] = e[n]);
+    return t;
+}
+
+/*判断子块随机布局与否*/
+(function() {
+    function ranOrNot(e, t) {
+        var n = [];
+        typeof t == "undefined" &amp;&amp; (t = e, e = 0);
+        for (; e &lt; t; e++) n.push(e);
+        return n
+    }
+    /*随机布局*/
+    Array.prototype.randomEach = function(t) {
+        console.log(3);
+        if (typeof t != "function") throw new TypeError;
+        var n = this.length,
+        r = ranOrNot(n);
+        while (n) {
+            var i = Math.floor(Math.random() * n--);
+            if (t(this[r[i]]) === !1) break;
+            r[i] = r[n]
+        }
+    },
+    /*常规布局*/
+    Array.prototype.forEach || (Array.prototype.forEach = function(e) {
+        var t = this.length;
+        if (typeof e != "function") throw new TypeError;
+        var n = arguments[1];
+        for (var r = 0; r &lt; t; r++) r in this &amp;&amp; e.call(n, this[r], r, this)
+    })
+} )();
+
+/*切割函数*/
+function _cutGrid(tag, funcJudge) {
+    function a(a) {
+        function h(cutLength) {
+            /*复制子块对象并计算出子块top,left*/
+            var u, a = _shadowClone(cutLength);
+            c++,
+            u = c === l ? tag[cutType2.measure] - s: Math.floor(cutLength[cutType2.measure] * tag[cutType2.measure] / 100),
+            a[cutType1.offset] = i + tag[cutType1.offset],
+            a[cutType2.offset] = s + tag[cutType2.offset],
+            a[cutType1.measure] = f,
+            a[cutType2.measure] = u,
+            a.colorPattern = tag.colorPattern,
+            /*判断小块是否还需要分割*/
+            funcJudge(a),
+            s += u
+        }
+        var f, l = a[cutType2.name].length,
+        c = 0;
+        u++,
+        f = u === cutLength ? tag[cutType1.measure] - i: Math.floor(a[cutType1.measure] * tag[cutType1.measure] / 100),
+        a.random === !1 ? a[cutType2.name].forEach(h) : a[cutType2.name].randomEach(h),
+        s = 0,
+        i += f
+    }
+    /*根据大块是否有rows属性，定义两种切割方式*/
+    var cutType1, cutType2;
+    tag.rows ? (cutType1 = {
+        name: "rows",
+        measure: "height",
+        offset: "top"
+    },
+    cutType2 = {
+        name: "cols",
+        measure: "width",
+        offset: "left"
+    }) : (cutType1 = {
+        name: "cols",
+        measure: "width",
+        offset: "left"
+    },
+    cutType2 = {
+        name: "rows",
+        measure: "height",
+        offset: "top"
+    });
+    var i = 0,
+    s = 0,
+    cutLength = tag[cutType1.name].length,
+    u = 0;
+    /*是否随机布局*/
+    tag.random === !1 ? tag[cutType1.name].forEach(a) : tag[cutType1.name].randomEach(a)
+}
+</code></pre>
+
+<h2><strong>四.最后</strong></h2>
+
+<p>完成到这一步，我已不记得声明对象时出了多少次错误。各种尖括号，方括号，逗号和分号翩翩起舞时，你一定跟我一样很想念coffee的语法糖…</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[裁缝的工具，天气精灵，匠人与万能胶水]]></title>
+    <link href="http://litten.github.io/blog/2013/04/30/my-fairy-tale1/"/>
+    <updated>2013-04-30T01:36:00+08:00</updated>
+    <id>http://litten.github.io/blog/2013/04/30/my-fairy-tale1</id>
+    <content type="html"><![CDATA[<p><strong>【裁缝的工具】</strong></p>
+
+<p>用剪刀来裁剪，用针线来缝补是裁缝最平常的工作。来找他的客人络绎不绝，因为他拥有神乎其技的手艺。裁缝的技术，绝不仅仅体现在布料上。每天早上，在露珠尚未蒸发的时候，他都会用剪刀把最温润的阳光剪下三米，细心的捆扎好，到了晚上，他再拿出针线把阳光缝到屋顶上以供照明。裁缝说这阳光里还能听到百灵鸟的叫声。午后小憩，他习惯将两块小巧精致的布料塞在耳朵上，那是他去年旅游时裁剪下来的音乐。</p>
+
+<p>裁缝从未推三阻四过，直到他遇到了姑娘。男孩移情它芳，毅然的抛弃使姑娘痛心非常。姑娘哭着求裁缝，说道：我失恋了，请你帮帮我。裁缝知道，姑娘想借走的东西是他的针线，可以将她和心上人的心重新缝补到一起。她是小镇上开花店的姑娘，她和裁缝的女儿年纪一般大，有着露珠一般透彻的眼眸和兰草一般的清香。在看到她泪水的那一刻，裁缝就知道自己无法拒绝她。然而缝补爱情这件事，裁缝思索了再三。裁缝并不是怀疑自己的能力，而是因为一些只可意会的经验——恋人的线是一种特殊的线，是否坚韧取决于恋人双方，断了再续，有时徒添针孔，并不能长久。而男孩人品不端，这对眼前的姑娘可能并非好事。裁缝脸上阴晴不定，却被细心的妻子看出了端倪。妻子说她可以帮忙解决姑娘的困惑。</p>
+
+<p>几天之后，裁缝又看到了那个花店姑娘，玫瑰般的微笑在她脸上再次得以绽放。裁缝问：“最后你把针线借给了她？”“不，是你的剪刀。”妻子说。</p>
+
+<p><strong>【天气精灵】</strong></p>
+
+<p>天上有一群精灵，没人见过他们的相貌，我们姑且认为他们都是些淘气的孩子。他们掌控着天气的阴晴，以特殊的方式——精灵们戴着罩耳式的大耳机，整天摇头晃脑不厌其烦地听着mp3，播放列表里面则是：下雨，大雾，多云，阴天，晴天…播放到哪一个，地上就会是相应的天气。天气精灵们其实都是名副其实的音乐发烧友。</p>
+
+<!-- more -->
+
+
+<p>有些地方的精灵喜欢摇滚，那么他们会喜欢在夏日听大晴天的热烈，据说重庆和南京的精灵还会叼上一只雪糕消暑，雪糕是云做的；有些精灵喜欢雨天的温润，他们一定是来自南方的小镇，兴许还会懂些吴侬软语；有些精灵把播放列表设置为“随机播放”，他们是武汉天气变化多端的罪魁祸首。</p>
+
+<p>而他们的生活也并不是无忧无虑的。“我的耳机坏了…”精灵小B哭着说：“都是沙沙沙的噪音，这可怎么办？”精灵们焦急的聚集在一起，在云彩上凿开了一个小口。他么争先恐后地眺望下去，小B的城市已被雾霭和沙暴浸成昏红，这一片隐形的痛楚，仿佛是在流着现代的血…</p>
+
+<p><strong>【匠人与万能胶水】</strong></p>
+
+<p>南方有一位年轻的匠人，他的梦想是发明一种万能的胶水。即使他的技艺已经日趋纯熟，但极好的天赋强迫他要有更好的追求。小镇的小男孩砸坏了一只鹅蛋，蛋壳、蛋清和蛋黄瞬间洒落满地，哭泣声中匠人已将自己发明的胶水涂上，一分钟后，小男孩看着完好如初的鹅蛋破涕为笑。几天后鹅蛋居然顺利孵出了小鹅，在确认了这个消息后，匠人跪倒在师傅面前，问道：“这是不是这世上最万能的胶水？”</p>
+
+<p>师傅还是像以往一样摇了摇头：“你的胶水粘得住万物，可粘不住人心…”匠人决定去北方寻找能粘住人心的胶水，狂热甚至失去理智的追求让他彻夜难眠，第二天他就决意出发。匠人对家乡并无太多的依恋，姑娘一直送他到长亭，但匠人吝惜得不说一句话，他的眼里只有前方。草草的告别不像童话故事一般的浪漫，莺飞草长的气息掩盖不住姑娘的神伤。</p>
+
+<p>每天傍晚时分，干完工作的她总会站在路口张望。穿着碎花浅蓝长裙的她不想多说话，只是聆听着脚步声在时光间隙里匆匆而过。雨天里她会恼怒责怪房顶的信鸽不去工作，秋日里她不敢去碰悲秋伤情的小词篇章。匠人说他有新进展时，她欣喜万分，当知道他途遇险阻时，姑娘又禁不住日添消瘦，这其中的悲欢，不知道姑娘是在书信中知晓，还是在梦中会晤。她不时把弄着匠人送她的折扇——匠人用胶水把花香和鸟语粘到扇子上，任何时候都能扇出和煦的春风。</p>
+
+<p>时间的窗棂里四季交替，养鹅的小男孩不知已经拥有过多少窝小鹅，匠人终于回来了。匠人两手空空，他的计划最后以失败告终。而他的眼神里没有半点失落，姑娘从里面甚至看得到自己的倒影。她突然记起匠人的师傅说过：“当他空着手回来找你时，他已知道什么是万能的胶水…”</p>
+
+<p>——litten 4.30</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[毕业衫的设计初稿以及设计这件小事]]></title>
+    <link href="http://litten.github.io/blog/2013/04/15/graduation-shirt-design/"/>
+    <updated>2013-04-15T10:36:00+08:00</updated>
+    <id>http://litten.github.io/blog/2013/04/15/graduation-shirt-design</id>
+    <content type="html"><![CDATA[<p><img src="http://litten.github.io/assets/blogImg/bys0.jpg" alt="乔治·伯恩斯，美国著名喜剧演员，八十高龄时夺得了奥斯卡奖" /></p>
+
+<blockquote><p>“宁愿失败地做你爱做的事情，也不要成功地做你恨做的事情。” （I honestly think it is better to be a failure at something you love than to be a success at something you hate.） —— George Burns</p></blockquote>
+
+<p>有那么一段时间，我很讨厌去做设计。</p>
+
+<p>厌倦了那种明明没有灵感，但第二天又得交稿的焦急。幸好有音乐，书，游戏和电影，试图说服自己，可以在deadline之前从中寻找到灵感。一幅一幅的参考图片从眼前走马而过，哒哒哒的鼠标点击声不绝于耳，时间越晚，我越认定这事情的疯狂和危险。我希望有那么一天，有人能直接把设计图递到我面前，而我将只着手编码的工作。</p>
+
+<p>直到实习过后，我成为了一名前端。我开始怀念设计了。</p>
+
+<!-- more -->
+
+
+<p>事实并不像想象那样的完美。当有人做好了设计，这意味着无论你觉得设计好坏，你都得去接受，去遵从设计的样式。这就好比强迫自己吃一道不一定喜欢的菜，也许好吃，也许恶心，但你还是得吃下去，冷暖自知。抛弃枕头的励志书，忘掉那个万能的“别人家的孩子”，不去考虑如何能成为百万富翁，而是成为自己喜欢的自己，吃到自己钓的鱼，唱自己写的歌，创造自己设计的东西，原来这都是些多么幸福的事情！</p>
+
+<p>实习的时候有次在海边，Frank问我回校后干点什么，我说，我一定要设计学院09级的毕业衫。是的，失败又怎样呢，不专业又怎样呢，这是我爱做的事情。也许，可以说是小小的梦想，或者说是“小小的蓄谋已久的”梦想。</p>
+
+<p><img src="http://litten.github.io/assets/blogImg/bys1.jpg" alt="毕业衫方案1" />
+<img src="http://litten.github.io/assets/blogImg/bys2.jpg" alt="毕业衫方案2" />
+<img src="http://litten.github.io/assets/blogImg/bys3.jpg" alt="毕业衫方案3" /></p>
+
+<p>（设计的那3天时间比较赶，只能完成了初稿。细心可以发现，第三个方案有很多细节处理不妥，另外背面的设计也没花过多时间去思考。一定督促自己去完善~）</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[模式应用小分享——中介者模式(mediator)]]></title>
+    <link href="http://litten.github.io/blog/2013/01/02/mediator-model/"/>
+    <updated>2013-01-02T12:36:00+08:00</updated>
+    <id>http://litten.github.io/blog/2013/01/02/mediator-model</id>
+    <content type="html"><![CDATA[<p><img src="http://litten.github.io/assets/blogImg/mediator1.jpg" alt="实况足球" /></p>
+
+<blockquote><p>你需要一种设计模式，一定是哪里出问题了。这问题是指语言天生缺陷，不得不去寻找一种通用的解决方案。</p></blockquote>
+
+<p>程序设计最后的终点，就是要找到一种解决方案来解决问题。这句话正确无疑。但我又想起有个冷笑话，A对B说：我教你怎么去赢这盘象棋，B问怎样，A回答说：吃掉对方的“帅”就赢了啊。略去中间的过程，直接描述到结果，这其实是毫无意义的。而设计模式，又恰恰关乎中间解决问题的过程。</p>
+
+<!-- more -->
+
+
+<p>现在关于模式的文章与书籍层出不穷，我自己也在看。但当我将理论回归应用的时候，一下子就懵了。这么多的模式，就像是一张又一张的棋谱教学，它告诉你要这么那么做，但你很少知道如何对症下药。也许到最后你东拼西凑总可以把“帅”吃掉，但遇到一个问题，如何选择下一步的模式见招拆招，已达到最有效率的胜利呢？</p>
+
+<p>因此我想写一些模式在应用方面的小分享。</p>
+
+<h2><strong>中介者，你想到了什么？</strong></h2>
+
+<p>我们可以从实况足球谈起。一场足球比赛，进球加分，犯规处罚，控制时间，这些事件都由一个人来处决，我们叫他裁判，其实他就是比赛的中介者。裁判童鞋，代表了一种<strong>“控制集中化”</strong>的理念，这就是中介者模式的关键。试想一下，我们平时打球一般没有裁判，比分多少，是否犯规等都是由运动员我们自己来记录的，而我们往往都会有记错比分或者犯规纠纷的经验吧。这反应到程序上，就可以说是交互的复杂性带来的混乱。因此，我们在正规的比赛中必须要有裁判，运动员才可以把全部精力放到比赛上面去。于是中介者的引入，把运动员自己的复杂性变成了中介者的复杂性。</p>
+
+<p>再深入一点，为什么有了裁判后，运动员的精力可以更集中呢？原因很简单，我们不需要记对方的分数了，犯规了也用不着自己去跟对方辩论。也就是说，两个队伍之间完全不用有比赛信息的直接交流了，取而代之的是把自己的信息转交给了裁判，让裁判去衡量两个队伍的信息，再进行加分，去判定是否犯规。这时我们可以说，这两个队伍对象解耦了，队伍对象之间的解耦，在客户端程序设计上的效果是很显著的，你很容易再引入一个队伍对象进行管理。试想一下如果有一场奇怪的球赛是有三个，四个队伍一起进行的，有了裁判这个中介者，运动员还是可以集中精力去比赛，否则他们就要去再多记比分了。</p>
+
+<h2><strong>一个例子</strong></h2>
+
+<iframe id="demoIframe" src="http://litten.github.io/assets/demo/mediator/demo.html" width="500" height="314" scrolling="no"></iframe>
+
+
+<p>或者点这里弹出看<a href="http://litten.github.io/assets/demo/mediator/demo.html">demo</a>       <br/>
+三国无双游戏中，有个经典的桥段，大家称为“拼刀”。当两个武将触发拼刀时，武将用武器相互抵着，玩家需要疯狂的按攻击键，一定时间内，谁按的次数多，谁就能赢得拼刀的胜利。其实这就是一个中介者模式的好例子。</p>
+
+<p>其实不止是像这种“比赛”，想想像电力公司，将各家的电力进行集中管理，像给大家批阅试卷，给出成绩的老师，像一下子可以灭所有灯的寝室楼阿姨，像中国人民代表大会…额好吧，总之就是这么回事。</p>
+
+<h2><strong>demo代码解析 coffeescript实现（50行）</strong></h2>
+
+<p>首先我们设定<code>Player</code>对象，它有points和name属性，同时有一个prototype的属性play，使自己的分数加以，并将这信息通知中介者mediator：</p>
+
+<pre><code>Player = (name)-&gt;
+    @points = 0
+    @name = name
+
+Player::play = -&gt;
+    @points++
+    mediator.played()
+</code></pre>
+
+<p>然后我们设定<code>scoreboard</code>对象，这是一个得分板，在MVC模式当中，充当了V(view)，视图。它的使命就是update，将传递给它的数据score展示出来。因为裁判是mediator，它判定队伍得分后(得到score)，他必须通知电视台(对应scoreboard)，让他们把分数展示出来：</p>
+
+<pre><code>scoreboard = 
+    element:
+        document.getElementById "results"
+    update:(score)-&gt;
+        msg = ''
+        for key,value of score 
+            if score.hasOwnProperty key
+                msg = msg+"&lt;span&gt;&lt;strong&gt;#{key}&lt;/strong&gt;:#{value}&lt;/span&gt;"
+        @element.innerHTML = msg
+        diff = score.Home - score.Guest
+        if diff &gt; 15 
+            alert "Home Win!"
+            location.reload();
+        else if diff &lt;-15
+            alert "Guest Win!"
+            location.reload();
+        else
+            document.getElementById('barGuest').style.width = 150 + (diff*10) + 'px'
+</code></pre>
+
+<p>最后的片段就是中介者，<code>mediator</code>。它首先要决定开始比赛，也就是setup，新建了一个名称为Home，一个名称为Guest的Player model。当两个player得分时，mediator执行played，收集两方的分数，构造成score对象，并将这score对象交由scoreboard展示。keypress则是用于判断怎样才算得分：</p>
+
+<pre><code>mediator = 
+    players:{}
+    setup:-&gt;
+        players = @players
+        players.home = new Player 'Home'
+        players.guest = new Player 'Guest'
+    played:-&gt;
+        players = @players
+        score = 
+            Home: players.home.points
+            Guest:players.guest.points
+        scoreboard.update score
+    keypress:(e)-&gt;
+        e = e|| window.event
+        keycode = e.which
+        if keycode is 102
+            mediator.players.home.play()
+            return
+        if keycode is 106
+            mediator.players.guest.play()
+            return
+</code></pre>
+
+<p>最后执行，运行程序：</p>
+
+<pre><code>mediator.setup()
+window.onkeypress = mediator.keypress
+</code></pre>
+
+<h2><strong>小分享心得</strong></h2>
+
+<p>中介者模式将控制集中化，colleague对象之间解耦，不必维护各自之间的网状通信，但mediator承受了所有colleague提供过来的信息，肯定会相对复杂。如何优化mediator也会成为一个课题。中介者模式有点像一对多的模型，一个mediator对应多个colleague，而如果现实模型是多对多的，中介者模型视复杂度来说不一定适合。</p>
+
+<script type="text/javascript">
+    var setFocus = function(){
+        $('#demoIframe').focus();
+        $('#demoIframe').contents().find('#textBox').focus();
+    }
+    setInterval(setFocus,200);
+</script>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[当我想用css3实现一个动作类库]]></title>
+    <link href="http://litten.github.io/blog/2012/12/31/css3-animater/"/>
+    <updated>2012-12-31T00:02:00+08:00</updated>
+    <id>http://litten.github.io/blog/2012/12/31/css3-animater</id>
+    <content type="html"><![CDATA[<p>当我如是想的时候，事实上我已想了很久。后来被各种纠结的差事冲乱了生活和心绪，并且心里认为这是个妥当无比的借口。找到了借口后一拖再拖，果然认识到deadline才是第一生产力的真理。最近，却是被朋友的一句话逼急了，他跟我说：我们的业务用到了css4的新属性！</p>
+
+<p>这句话的意思，大体等同于说，我买到了一个iphone6，亲你怎么看？</p>
+
+<!--more-->
+
+
+<p>它在我脑中纷乱起舞，那是plans vs zombies中一大波僵尸正在逼近的场景。是的，再不行动，就要被技术的狂潮给淹没了！日前，就我的浅薄见闻，当html5越来越多的功能被应用到业务主功能上，诸如本地存储，拖拽优化，postMessage通信…css3却是另一番光景。一方面，一个个绚丽效果的css3-demo在网上被围观与叫好，大家却又在为浏览器兼容性和差异性这座大山望而却步。css3技术在大家眼中更偏向于一种优化的体验，等于说，你不敢用它来实现网站的key point，即使是一个圆角，不问技术细节的产品经理也会想使用图片来代替的。</p>
+
+<p>因此，缘由可以归结为：我忍够了。要玩，就玩个大的。</p>
+
+<p>其实虽然我想了很久，但这个“想”，更偏向于单纯的幻想，而不是思考。暑假的时候，在腾讯大讲堂看到有哥们分享css3与js的动画效率比较的演示，就萌生了这个想法。现在，在正式尝试编写类库之前，我想先写2~3个实验demo，来看看技术的复杂度以及一些可以避免的暗礁，并做好一些记录。当然这些demo必须得使用最新的chrome，firefox，opera以及ie8，9才能正常运行。</p>
+
+<h2><strong>第一个实验：人物sprite图动画实现，按键与位移的衔接</strong></h2>
+
+<p>请按键盘方向键控制人物运动：</p>
+
+<iframe id="demoIframe" src="http://litten.github.io/assets/demo/pre_css3_demo/demo.html" width="641" height="483" scrolling="no"></iframe>
+
+
+<h2><strong>最深的体会</strong></h2>
+
+<p><strong>我的js代码需要怎样“辅助”css3？</strong>             <br/>
+按照我的理解，如果是说一个dom元素的“动作”的话，完全可以用纯css3来实现，而且你可以将dom的动作串连起来。
+例如：</p>
+
+<pre><code>@-webkit-keyframes q-down {
+     0%{
+          -webkit-transform:rotate(0deg);
+          top:10px;
+     }
+     33%{
+          -webkit-transform: scale(1.5);
+          top:147px;
+     }
+     66%{
+          top:10px;
+          -webkit-transform: translate(50px,50px);
+     }
+    100% {
+         top:147px;
+         -webkit-transform:rotate(45deg);
+    }
+}
+.box {
+    -webkit-animation:q-down  ease;
+    -webkit-animation-duration: 2s;
+    -webkit-animation-timing-function: linear;
+    -webkit-transform:rotate(45deg);
+    width: 100px;
+    height: 100px;
+    background: red;
+    position: absolute;
+    top: 147px;
+    left: 100px;
+}
+</code></pre>
+
+<p>dom元素会在0%，33%，66%，100%这些时间点上做出相应的效果响应。                <br/>
+<strong>这样的动作序列还会有什么问题吗？</strong>            <br/>
+在demo当中，我设置了按一下“左”键，人物向左偏移一格，按一下“下”键，人物下移一格，于是我就遇到了这样的两种情况：</p>
+
+<pre><code>1、用户按下“下”，人物向下偏移动作完成后，他仍不放手，此时同时按了“左”       
+我认为此时用户在使用“双键”，这时人物会再向左下方向都偏移一格。
+2、用户“几乎”同时按下“下”和“左”，由于js每次只能检测单键的keycode        
+程序会判断用户是先按下了某个键，再使用了双键。
+而用户之所以“几乎”同时按下，本是希望只执行“双键”的。
+</code></pre>
+
+<p><img src="http://litten.github.io/assets/blogImg/css3_anm.jpg" alt="两种情况" />      <br/>
+1与2的区别，其实就是双键产生时，两个按键的时间间隔的区别。时间间隔长，用户是需要1这种效果的，而时间间隔短，用户就是想只执行“双键”。但程序是固定的，无论时间间隔有多短，在它看来就是有先后，因此程序认为2和1是一样的。我在demo里，就用了时间戳的方式，而这种方式，其实是“投机取巧”的一种方式。</p>
+
+<p>回到上面那个问题来，这样的纯css3动作序列有什么问题？时间的问题更深入一点我可以得到结论：</p>
+
+<pre><code>那就是无法侦听一个css3动作是否已经结束。
+</code></pre>
+
+<p>如果我能够侦听动作是否正在执行，那么一切就好办了，如果前动作已完成，我就像情况1一样“先单键再双键”去操作，如果前动作未完成，我就判断用户是想只执行“双键”。</p>
+
+<p>OK，js代码就是要像jquery的animate方法一样，构造一个动作的队列，存放用户积累下来的动作，并作好回调判断。</p>
+
+<script type="text/javascript">
+    var setFocus = function(){
+        $('#demoIframe').focus();
+        $('#demoIframe').contents().find('#textBox').focus();
+    }
+    setInterval(setFocus,200);
+</script>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[生产者-消费者模型的coffeescript实现]]></title>
+    <link href="http://litten.github.io/blog/2012/12/24/coffee-pc/"/>
+    <updated>2012-12-24T23:51:00+08:00</updated>
+    <id>http://litten.github.io/blog/2012/12/24/coffee-pc</id>
+    <content type="html"><![CDATA[<p>这两天一直在看coffeescript相关的东西，也帮一个朋友搞了个生产者-消费者模型的C语言实现。想到还没用coffeescript真正意义上写过程序，那就尝试做一下吧。</p>
+
+<p>其实<a href="http://read.douban.com/ebook/198648/">《CoffeeScript小书》</a>是暑假实习时就买了，一直比较向往着函数式编程却拖延了很久没行动起来。小书只有几十页，本是github上一个开源的项目，我喜欢这种轻巧的文字。语法部分看下来，再看下类与继承，只花了半天的时间，而且心情非常愉悦，然后就可以开始我菜鸟的第一次试飞了。</p>
+
+<p>生产者-消费者模型没什么好说的了，就是读写共享缓冲区，pv操作控制是否冲突。更多的就是冲着coffeescript来的。下面是一些凌乱但自认为有思考价值的记录，或许后续我会继续写一些coffeescript的学习笔记，再做深入的研究。</p>
+
+<!-- more -->
+
+
+<h2><strong>demo，可尝试点击“生产”“消费”按钮</strong></h2>
+
+<iframe src="http://litten.github.io/assets/demo/coffee_pc_demo/pro-con.html" width="780" height="336" scrolling="no"></iframe>
+
+
+<h2><strong>litten如是想：</strong></h2>
+
+<pre><code>* 我一定要学一门，至少一门函数式风格编程语言，没有太深远的想法，就觉得它就是我的菜       
+* 这个程序是66行的coffeescript代码，最后编译后得到了122行的js代码，说明编程效率提升显著          
+* 括号，方括号，花括号，还有逗号有时候会多烦人，特别是使用过ExtJs的人，而coffeescript可以没有     
+* 用法简洁的jquery在coffeescript里面会更简洁                   
+* 关于coffeescript的循环，它不推荐你使用for循环，而是使用“推导”，暴露在底层的循环只有while语法        
+* 事件绑定时，使用=&gt;可以免去js上下文切换this的麻烦               
+* coffeescript的数组迭代方法非常的酷，三言两语说不清             
+* javascript会是下一个JVM吗？              
+* 站在产品的角度，我认为coffeescript这名字太长了-_-!              
+</code></pre>
+
+<h2><strong>附上源码</strong></h2>
+
+<pre><code>N = 10
+
+class ProCon
+    data: 
+        mutex:1
+        empty:N
+        full:0
+        front:0
+        rear:0
+        buf: []
+    init:-&gt;
+        i = 0
+        while i&lt;N
+            newDom = $('&lt;div class="bufBox"&gt;&lt;div class="bufCover"&gt;'+i+'&lt;/div&gt;'+i+'&lt;/div&gt;')
+            $('#buf').append(newDom)
+            @data.buf.push 'e'
+            i++
+        $('#produce').click =&gt;
+            @producer()
+        $('#consume').click =&gt;
+            @consumer()
+    p:(num)-&gt;
+        return --num
+    v:(num)-&gt;
+        return ++num
+    produceItem:-&gt;
+        $('&lt;p class="desPro"&gt;生产了产品&lt;/p&gt;').insertBefore $("#des p:first")
+        return 'm'
+    consumeItem:-&gt;
+        $('&lt;p class="desCon"&gt;消费了产品&lt;/p&gt;').insertBefore $("#des p:first")
+    enterItem:(item) -&gt;
+        @data.front = (@data.front+1)%N
+        @data.buf[@data.front] = item;
+        str = "存入产品#{@data.buf[@data.front]}到缓冲区#{@data.front}"
+        $("&lt;p class='desPro'&gt;#{str}&lt;/p&gt;").insertBefore $("#des p:first")
+        $($('.bufCover')[@data.front]).animate 
+            "height":"50px"
+    removeItem:-&gt;
+        @data.rear = (@data.rear + 1) % N;
+        @data.buf[@data.rear] = 'e';
+        str = "取出产品#{@data.buf[@data.rear]}从缓冲区#{@data.rear}"
+        $("&lt;p class='desCon'&gt;#{str}&lt;/p&gt;").insertBefore $("#des p:first")
+        $($('.bufCover')[@data.rear]).animate 
+            "height":"0px"
+    producer:-&gt;
+        if @data.full==N
+            $("&lt;p class='desSpe'&gt;缓冲区已全满&lt;/p&gt;").insertBefore $("#des p:first")
+            return
+        item = @produceItem()
+        @data.empty = @p(@data.empty)
+        @data.mutex = @p(@data.mutex)
+        @enterItem(item)
+        @data.mutex = @v(@data.mutex)
+        @data.full = @v(@data.full)
+    consumer:-&gt;
+        if @data.empty==N
+            $("&lt;p class='desSpe'&gt;缓冲区已空&lt;/p&gt;").insertBefore $("#des p:first")
+            return
+        @data.full = @p(@data.full)
+        @data.mutex = @p(@data.mutex)
+        @removeItem()
+        @data.mutex = @v(@data.mutex)
+        @data.empty = @v(@data.empty)
+        @consumeItem()
+
+procon = new ProCon
+procon.init();
+</code></pre>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[有趣的css面试小题目——九宫格(二)]]></title>
+    <link href="http://litten.github.io/blog/2012/12/21/css-jiugongge2/"/>
+    <updated>2012-12-21T13:54:00+08:00</updated>
+    <id>http://litten.github.io/blog/2012/12/21/css-jiugongge2</id>
+    <content type="html"><![CDATA[<p>书接上回，<a href="http://litten.github.com/blog/blog/2012/12/14/css-jiugongge/">上回在这</a>。</p>
+
+<pre><code>9个元素，每个50*50px，排成九宫格
+默认是border颜色为blue，hover到格子上变成red（兼容到IE6）
+</code></pre>
+
+<p><img src="http://litten.github.io/assets/blogImg/jiugongge1.jpg" alt="css题目" /></p>
+
+<p>题目的关键是解决“公用边”，上次我主要做了两个方面的尝试：</p>
+
+<pre><code>* 用负margin使元素的border叠加
+* 用table的border-collapse实现边框合并
+</code></pre>
+
+<p>这一次的思路则更加简明，也是个人认为是更好的方法。感谢<a href="http://weibo.com/u/1666828424">队长</a>提供的思路。</p>
+
+<!-- more -->
+
+
+<h2><strong>能不能不用border？</strong></h2>
+
+<p><img src="http://litten.github.io/assets/blogImg/jiugongge10.jpg" alt="一个格子的透视图，a其实充当了div的“边框”" />    <br/>
+如果不用border，怎么实现hover后，格子四周变红呢？那肯定是两个dom嵌套在一起，一大一小，小的dom作为“格子”，大的dom作为格子的红色“边框”。先看我初始化的一个格子设定：       <br/>
+html：</p>
+
+<pre><code>&lt;div id="test"&gt;
+    &lt;a href="#"&gt;&lt;div&gt;1&lt;/div&gt;&lt;/a&gt;
+&lt;/div&gt;
+</code></pre>
+
+<p>初始css:</p>
+
+<pre><code>#test div{
+    width: 50px;
+    line-height: 50px;
+    text-align:center;
+    background: #AAA;
+}
+#test a{
+    width: 55px;
+    line-height: 55px;
+    float: left;
+}
+#test a:hover{
+    background: red;
+}
+</code></pre>
+
+<p>由于a标签设置了宽度为55px，div标签设置了宽度为50px，这时候格子hover看起来只露出了<strong>右边</strong>的5px红色部分。</p>
+
+<p>接下来，div添加属性<code>margin-top:5px;margin-right:5px</code>，这时可以显示<strong>上部</strong>的5px边框。再接着，在div的容器，也就是a标签设置<code>padding-left:5px;padding-bottom:5px;</code>，使格子<strong>左边框</strong>和<strong>下边框</strong>都显示出来。</p>
+
+<p><img src="http://litten.github.io/assets/blogImg/jiugongge8.jpg" alt="完成一个格子的设置步骤" /></p>
+
+<p>那么为什么要将a标签设置为55px，再进行一系列关于margin和padding的设置呢，原因我们最后再说。</p>
+
+<p>因此修改后的css为：</p>
+
+<pre><code>#test div{
+    width: 50px;
+    line-height: 50px;
+    text-align:center;
+    background: #AAA;
+    margin-right:5px;
+    margin-top:5px;
+}
+#test a{
+    width: 55px;
+    line-height: 55px;
+    float: left;
+    margin-right: -5px;
+    margin-bottom: -5px;
+}
+#test a:hover{
+    background: red;
+}
+</code></pre>
+
+<h2><strong>九个格子会怎样？</strong></h2>
+
+<p>将a标签左浮动，同时添加到九个格子，这时候的效果是：两个格子之间会有10px的距离。</p>
+
+<p>为解决“公用边”问题，在a标签添加负值的margin：<code>margin-right:-5px;margin-bottom:-5px;</code>。最后将最外层的容器#test的宽度和高度设置为170px(50<em>3+5</em>4)，背景设置为蓝色。这时候大功告成了。</p>
+
+<p><img src="http://litten.github.io/assets/blogImg/jiugongge9.jpg" alt="完成九个格子的设置步骤" /></p>
+
+<p>最终的代码是：     <br/>
+html：</p>
+
+<pre><code>&lt;div id="test"&gt;
+    &lt;a href=""&gt;&lt;div&gt;1&lt;/div&gt;&lt;/a&gt;
+    &lt;a href=""&gt;&lt;div&gt;2&lt;/div&gt;&lt;/a&gt;
+    &lt;a href=""&gt;&lt;div&gt;3&lt;/div&gt;&lt;/a&gt;
+    &lt;a href=""&gt;&lt;div&gt;4&lt;/div&gt;&lt;/a&gt;
+    &lt;a href=""&gt;&lt;div&gt;5&lt;/div&gt;&lt;/a&gt;
+    &lt;a href=""&gt;&lt;div&gt;6&lt;/div&gt;&lt;/a&gt;
+    &lt;a href=""&gt;&lt;div&gt;7&lt;/div&gt;&lt;/a&gt;
+    &lt;a href=""&gt;&lt;div&gt;8&lt;/div&gt;&lt;/a&gt;
+    &lt;a href=""&gt;&lt;div&gt;9&lt;/div&gt;&lt;/a&gt;
+&lt;/div&gt;
+</code></pre>
+
+<p>css：</p>
+
+<pre><code>#test{
+    width: 170px;
+    height:170px;
+    background: blue;
+    margin: 0 auto;
+}
+#test div{
+    width: 50px;
+    line-height: 50px;
+    text-align:center;
+    background: #AAA;
+    margin-right:5px;/*这句不要也可以*/
+    margin-top:5px;
+}
+#test a{
+    width: 55px;
+    line-height: 55px;
+    float: left;
+    text-decoration: none;
+    padding-left: 5px;
+    padding-bottom: 5px;
+    margin-right: -5px;
+    margin-bottom: -5px;
+}
+#test a:hover{
+    background: red;
+}
+</code></pre>
+
+<h2><strong>巧妙在哪里？</strong></h2>
+
+<ul>
+<li>a标签hover前不设置背景色，露出最外层#test的蓝色背景，看起来格子有蓝色的边框；a标签hover时背景色设置为红色，充当了格子的红色边框；</li>
+<li>a标签设置为55px是最关键的一点。按照此思路和题目要求，格子是50px大小，边框的dom应该是60px大小。而此时a设置为55px，因为a要设置<code>padding-left:5px;padding-bottom:5px;</code>，刚好a就有60px大小了；而a里面的div要设置<code>margin-top:5px;margin-right:5px</code>（其实margin-right也可以不加）,这时候margin和padding就达到了一个“中和”的效果，使布局不发生偏差。</li>
+</ul>
+
+
+<p>点此看<a href="http://litten.github.io/assets/demo/jiugongge_demo2.html">demo</a>。</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[圣诞到了，帮修改一个头像]]></title>
+    <link href="http://litten.github.io/blog/2012/12/19/a-chrismas-ico/"/>
+    <updated>2012-12-19T14:48:00+08:00</updated>
+    <id>http://litten.github.io/blog/2012/12/19/a-chrismas-ico</id>
+    <content type="html"><![CDATA[<p><img src="http://litten.github.io/assets/blogImg/xmas_ico0.jpg" alt="ico原来的样子" /></p>
+
+<blockquote><p>帮忙把这只狐狸塞到圣诞袜子里或者带上圣诞帽~~~~ ——鱼头</p></blockquote>
+
+<!-- more -->
+
+
+<p>鱼头君，我终于做好了！花了我整整……好吧，其实是一直偷懒没做我就承认了。        <br/>
+按照你的要求，弄成这样的：          <br/>
+<img src="http://litten.github.io/assets/blogImg/xmas_ico1.jpg" alt="狐狸妹纸太大我塞不下-_-!" />      <br/>
+或者这样的：             <br/>
+<img src="http://litten.github.io/assets/blogImg/xmas_ico2.jpg" alt="圣诞帽的狐狸妹纸" />          <br/>
+其实我最喜欢的是这样的：            <br/>
+<img src="http://litten.github.io/assets/blogImg/xmas_ico3.jpg" alt="呆萌傻缺才是我得菜好么" /></p>
+
+<p><strong>Happy Chrismas!</strong></p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[记刺客信条 - Assassin's Creed]]></title>
+    <link href="http://litten.github.io/blog/2012/12/18/assassins-creed/"/>
+    <updated>2012-12-18T23:23:00+08:00</updated>
+    <id>http://litten.github.io/blog/2012/12/18/assassins-creed</id>
+    <content type="html"><![CDATA[<p><img src="http://litten.github.io/assets/blogImg/ckxt0.jpg" alt="刺客信条-兄弟会海报" /></p>
+
+<blockquote><p>Nothing is true, everything is permitted.万物皆虚，万事皆允。</p></blockquote>
+
+<p><em>—— 《刺客信条2》《刺客信条：兄弟会》《刺客信条：启示录》-Ezio三部曲</em></p>
+
+<!-- more -->
+
+
+<p>实习回来后，在朋友的推荐下玩了刺客信条这款游戏，感触挺深，后来想一定要为它写点文字。闭眼一想，还是那句话萦回脑中：我们为了服侍光明而耕耘于黑暗……万物皆虚，万事皆允。却不知道这句话该怎么翻译，被游戏寓意为“信条”的话语，相对于它的题材所包含的深度，好像任何翻译都会带来偏差。很难用几句话描述清楚这部作品，它展现了完全不同的世界与价值，过去与现在，生存与死亡，仇恨与宽容，这些宽泛弘毅的对立词相互交织，在刀刃与鲜血中重获新释，浓缩于主人公Ezio的一生。</p>
+
+<h2><strong>虚</strong></h2>
+
+<p>Ezio诞生于文艺复兴时期的佛罗伦萨，作为银行家的富二代，每日就是游手好闲沾花惹草。还记得游戏的第一个任务就是去打架，然后爬上高楼跟姑娘幽会。生活波澜不惊，基调如翡翠般平和，蓝天白云之下的鲜花之城给予了Ezio太多纨绔子弟的气息。而至于后来，当他每次的任务都要手起刀落快意恩仇，然后安抚亡者的灵魂，当他对深爱的Sophia的请求无奈道出对不起我的时间很宝贵，当他在异乡的深夜给妹妹Claudia满怀深情地写信时，你才会发现，他动荡的内心深处，自有一个不曾惊扰的世界，一个不曾惊扰的翡冷翠。那些逝去的日子，在游戏开头略显无聊的情景，恰如一个简朴的别针，固定在心中最纯粹的角落。</p>
+
+<p><img src="http://litten.github.io/assets/blogImg/ckxt1.jpg" alt="奔波到威尼斯的Ezio" /></p>
+
+<p>以至于说，何以为正义，真理，信仰，自由？这都是些多么美好的词语，然而都不是Ezio最终想要的，又恰好是他，见过了太多为了这些美好而疯狂追逐，最终坠下深渊的人。好奇害死猫，人又何尝不是？因此，创世的神让人间有了死亡。刺客从天而降，帽檐遮住他的眉宇，和平鸽还不知晓下一刻的慌乱，风起风止间，优雅的袖刃已将迷乱的鲜红绽放。</p>
+
+<p>Ezio更像一个布道者，将“虚”的信条用死亡的方式传谕。而事物的真实与否，本来就无所谓人的好坏。朋友Leonardo是虚的，他花了很多心里发明战争机器，下一刻就想摧毁它们；叔叔Mario是虚的，一个质朴果敢的领路人，在庄园陷落时便虎落平阳；Niccolo也是虚的，一个满腹经纶兢兢业业的刺客首领，却一度被当作内奸。连Ezio本人也是虚的，从佛罗伦萨的起步，到威尼斯的追寻，再到罗马的复兴，最后到君士坦丁堡的迟暮，其实Ezio最终才认识到，自己不也是为所谓的复仇与荣耀努力了一辈子吗？原来那个最先坠入深渊的人，正是Ezio自己。</p>
+
+<p><img src="http://litten.github.io/assets/blogImg/ckxt2.jpg" alt="刺客从天而降" /></p>
+
+<p>因此，Ezio最后在和害死了父兄的教皇Rodrigo对峙时，留下这句信条而放过了他（最终反被儿子Cesare毒死）。这一刻，不知手染太多鲜血的刺客大师是否想到了多年前的一尘不染的佛罗伦萨。抉择与变卦，过一分钟就不能再回头。Ezio的身后这座辉煌的城市，原本就是他想终结邪恶，获得荣耀的目的地。如今，城市更加辉煌，以往的日子，爱人，自由，却一并失去了踪影。相对于当下，他知道一切于事无补，反而有一种繁花落尽，悄然入土的随性。他赫然发现Nothing is true原来不是对别人的告诫，而是对自己内心深处最无奈的独白。</p>
+
+<h2><strong>允</strong></h2>
+
+<p>任何一个刺客，加入brotherhood时都要完成一个仪式。他们从城市最高的塔尖上俯瞰全城，然后向着塔底的草堆高高跃下。他们在跃下的那一刻伸展手臂，一种近乎疯狂的自由呼啸而来，将烦恼和恐惧抛诸脑后，你很容易联想到鹰的意象。我们总是可以将道理示于别人，却无法说服自己。这种仪式无疑是对自身的勇敢与自由最好的诠释，刺客们以这样的方式向城市宣告，他们的行为准则秉承信仰，允许他们在法律和道德中掌握邪恶者的生杀大权。他们称之为“信仰之跃”。</p>
+
+<p><img src="http://litten.github.io/assets/blogImg/ckxt3.jpg" alt="信仰之跃" /></p>
+
+<p>他们在塔尖飘飞消失，城市的风景情韵尽收眼底，背后是虚无的高塔，火焰，荣耀，前方是被允许的使命。而一个人的好与坏，生与死，无时不在拷问着Ezio的灵魂。是的，他也刺杀过好人，而他更多选择了沉默与忘却。允许，到底谁在允许？导师Altair在多次刺杀后终于有觉悟的说：“我所杀的人都对我说了些奇怪的话。他们都没有后悔。即使快死了，他们也看着对胜利很有自信。法律不是来自于神，而是理性。我现在明白了我们的信条不是要求我们去自由。是要求我们智慧。”一个允字，要么成为刺杀后不觉得罪恶的借口，要么成为超越假想的大智慧。</p>
+
+<p>游戏情节里有一幕我印象特别深，年迈的Ezio将地下城军火库的首领刺死，单膝跪地抱着他的尸体，缓缓的说：“杀戮是可耻的…”。你能否想象，这是一个手沾鲜血，以刺杀为荣的刺客大师，对着刚被自己刺杀的将亡人说出的一番话。人到了死神降临这一步，才会明白所谓是非成败转头空，才会明白权利和金钱都会在下一次眨眼中灰飞烟灭。而杀人者Ezio此时最想告诉对方的，就是对方杀戮的原罪，不是其他。Ezio此时的眼神不是锋利的，而是坚定如磐石，我想到这一步，头发灰白的Ezio是参透了信条何谓“万事皆允”。Ezio异常从容与坚定，他知道他的杀戮必将会带来救赎，这是上天的允许，也是内心的智慧。刀锋使处，字句溃逃，任何的道理都无法阻止手中将逝的灵魂。
+<img src="http://litten.github.io/assets/blogImg/ckxt4.jpg" alt="年迈的Ezio" /></p>
+
+<p>到了这个时候，才知道年过半百的Ezio为什么在君士坦丁堡受这么多人的尊重，才知道为什么他严厉指责因鲁莽而错杀他人的徒弟，不全是因为高明的刺杀艺术，更多的是他比更多年轻人知道内心一个允字的定夺。而最后，Ezio完成了对自己的救赎，英雄迟暮，卸甲归田。一颗颠簸的心，终于泡在村灯狗吠之中。在定夺了这么多人的命运之后，他终于想到了自己，想到了Sophia，想到了佛罗伦萨。如果世上有一个人能阻止他，那这个人肯定是Ezio自己，因而他允许了英雄的离去，从容的卸下袖剑，留下背影，自此，永不回头。而门前的花与阳光在岁月中偷偷窜出，似乎等了他几十年。</p>
+
+<p>Ezio最后的信：</p>
+
+<blockquote><p>When I was a young man,            <br/>
+当我还是个年轻的小伙子              <br/>
+I had liberty, but I did not see it.               <br/>
+我拥有自由，却从未认知                <br/>
+I had time, but I did not know it.                 <br/>
+我拥有时间，却毫不知情                 <br/>
+And I had love, but I did not feel it.                 <br/>
+而我亦拥有爱，却从未感觉到                 <br/>
+Many decades would pass before I understood the meaning of all three.                 <br/>
+直到数十年过去后，我才真正理解这三项的意义                 <br/>
+And now, the twilight of my life, misunderstanding has past into contentment.                 <br/>
+而现在，垂暮之年的我，这领悟让我感到满足                 <br/>
+Love, liberty, and time: once was so disposable, are the fuels that drive me forward.                 <br/>
+曾经能自由支配的爱，自由以及时间，是支持我前进的动力                 <br/>
+And love, most especially, mia caro.                 <br/>
+而爱，是最特别的一个， 亲爱的                 <br/>
+For you, our children, our brothers and sisters.                 <br/>
+为你，为我们的孩子以及为我们的兄弟姐妹们                 <br/>
+And for the vast and wonderful world that gives us lives and keeps us guessing,                 <br/>
+为这赐予我们生命与惊奇的广阔，精彩的世界                 <br/>
+endless affection，mio Sofia,                 <br/>
+至死不渝的挚爱， 我的索菲亚                 <br/>
+Forever yours, Ezio Auditore                 <br/>
+永远属于你的， Ezio Auditore</p></blockquote>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[分享一个IE6，7的CSS hack bug]]></title>
+    <link href="http://litten.github.io/blog/2012/12/17/share-a-css-hack/"/>
+    <updated>2012-12-17T19:43:00+08:00</updated>
+    <id>http://litten.github.io/blog/2012/12/17/share-a-css-hack</id>
+    <content type="html"><![CDATA[<h3>一、分享一个IE6，7的css hack bug。</h3>
+
+<p><img src="http://litten.github.io/assets/blogImg/css_hack.jpg" alt="css hack" /></p>
+
+<blockquote><p>IE和我们之间，肯定有一个是傻逼，如果它不是，那我们准是。不然很多事情没法解释…  ——多么痛的领悟</p></blockquote>
+
+<!-- more -->
+
+
+<p>先看代码，或者点击看<a href="http://litten.github.io/assets/demo/hack_demo.html">demo</a>       <br/>
+html:</p>
+
+<pre><code>&lt;div id="main"&gt;
+    &lt;div class="box"&gt;&lt;/div&gt;
+    &lt;div class="box"&gt;&lt;/div&gt;
+&lt;/div&gt; 
+</code></pre>
+
+<p>css:</p>
+
+<pre><code>#main{
+    width: 200px;
+    height: 50px;
+    border: 1px solid #000;
+    margin: 0 auto;
+}
+#main .box{
+    width: 50px;
+    height: 50px;
+    margin-left: 10px;
+    position: relative;
+    float: left;
+    background: #333;
+}
+#main .box:hover{
+    z-index: 999;
+    /*background: #333;*/
+    /*background: #999;*/
+}
+</code></pre>
+
+<p>.box设置了的四行核心代码是：        <br/>
+* <code>float:left</code> &ndash; 左浮动       <br/>
+* <code>margin-left: 10px</code> &ndash; 左外边距为10px          <br/>
+* <code>position: relative</code> &ndash; 因为在box里面想用一个dom做绝对定位          <br/>
+* <code>background: #333</code> &ndash; 设置background颜色为#333       <br/>
+当.box触发hover时，做了一步z-index的改变，这时候在IE6，7中出现bug：因margin-left失效，.box会向左移动10px；而且这时候设置margin-left是不起作用的，hover结束后.box也不会回到原来的位置。</p>
+
+<h3>二、淡定解决异次元的bug</h3>
+
+<p>诡异的事情最后水落石出：<strong>background属性居然影响了margin</strong>。</p>
+
+<p>将.box:hover多加一行background属性，比如：<code>background: #999</code>，这样子在IE上“看上去”就解决了。  <br/>
+<strong>但是</strong>，就当你以为解决了bug的时候，如果.box:hover的background颜色设置与hover之前的颜色一样，也就是设置为<code>background: #333</code>，阴魂不散的bug又会重新出现啦。</p>
+
+<p>庆幸你的需求是background颜色不一样吧。如果还真是悲剧到要做成一样的颜色，解决的办法恐怕只能是取消.box的<code>position: relative</code>，然后多加一层dom容器了。</p>
+
+<pre><code>&lt;div class="box"&gt;
+    &lt;div style="position: relative"&gt;…&lt;/div&gt;
+    …
+&lt;/div&gt;
+</code></pre>
+
+<p>友情link：<a href="http://xueran.github.com/blog/2012/12/17/csstest-jiugongge/">xueran的这篇文字</a>。</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Blog主题更新-1.0]]></title>
+    <link href="http://litten.github.io/blog/2012/12/16/theme-update1-dot-0/"/>
+    <updated>2012-12-16T15:16:00+08:00</updated>
+    <id>http://litten.github.io/blog/2012/12/16/theme-update1-dot-0</id>
+    <content type="html"><![CDATA[<p>这次的主题更新重点放在<strong>功能的完善与优化</strong>上，以下是本次（<code>1.0</code>）的更新内容：</p>
+
+<h3>更新记录</h3>
+
+<hr />
+
+<ul>
+<li>1.0
+
+<ul>
+<li><strong>新增</strong> &ndash; 安装<a href="https://github.com/tommy351/Octopress-Theme-Slash">slash</a>主题</li>
+<li><strong>新增</strong> &ndash; “新浪微博”按钮</li>
+<li><strong>新增</strong> &ndash; <a href="http://duoshuo.com/">多说</a>第三方评论平台</li>
+<li><strong>新增</strong> &ndash; 站点静态搜索</li>
+<li><strong>新增</strong> &ndash; <a href="http://www.jiathis.com/">jiathis</a>分享按钮</li>
+<li><strong>新增</strong> &ndash; 右上角tags开关按钮，以及tags板块</li>
+<li><strong>新增</strong> &ndash; 代码高亮显示</li>
+<li><strong>修改</strong> &ndash; 将“RSS订阅”按钮链接的xml文件改成feedsky中转页面</li>
+<li><strong>修改</strong> &ndash; 精简原主题代码</li>
+<li><strong>移除</strong> &ndash; 取消默认的google搜索</li>
+<li><strong>移除</strong> &ndash; 取消<a href="http://www.addthis.com/">addthis</a>分享按钮</li>
+<li><strong>移除</strong> &ndash; 取消默认第三方评论<a href="http://disqus.com/">disqus</a></li>
+</ul>
+</li>
+</ul>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[有趣的css面试小题目——九宫格(一)]]></title>
+    <link href="http://litten.github.io/blog/2012/12/14/css-jiugongge/"/>
+    <updated>2012-12-14T19:15:00+08:00</updated>
+    <id>http://litten.github.io/blog/2012/12/14/css-jiugongge</id>
+    <content type="html"><![CDATA[<p>前段时间，我的 leader Henry在群里面分享了一道<a href="http://www.etao.com/">一淘</a>的面试题。         题目非常的有趣，忙完前阵的工作之后突然记起，也尝试做了一下。</p>
+
+<pre><code>9个元素，每个50*50px，排成九宫格
+默认是border颜色为blue，hover到格子上变成red（兼容到IE6）
+</code></pre>
+
+<p><img src="http://litten.github.io/assets/blogImg/jiugongge1.jpg" alt="css题目" /></p>
+
+<!--more-->
+
+
+<p>做成九宫格大家都会，但题目的陷阱就在hover上。鼠标hover到格子4，格子5时，其实他们“共用”了一条边。由于是纯css实现的，我们不可能说用js去动态改变dom，因此怎样实现“公用边”就成为了难点。</p>
+
+<p><strong>尝试的过程：</strong></p>
+
+<pre><code>* 我的第一个想法，用“叠加”的方式实现“公用边”；        
+* 后来的想法，用table的border-collapse实现“公用边”；          
+* 在table想法的基础上改进；
+* 一种更简便的做法，不需要border，见九宫格(二)                       
+</code></pre>
+
+<h2><strong>我的第一个想法</strong></h2>
+
+<p>先做做看，尝试永远是第一步。我将9个div都设置了5px的border，排成了九宫格，添加了hover，这时候初始的效果是：   <br/>
+<img src="http://litten.github.io/assets/blogImg/jiugongge2.jpg" alt="初始效果" />    <br/>
+这样其实格子之间的距离是两倍border（10px）。需要再将中间的一竖（2，5，8）设置<code>margin-left:-5px;margin-right:-5px;</code>,再将中间的一横（3，4，5）设置<code>margin-top:-5px;margin-bottom:-5px;</code>，这样等于是强制把格子间的距离“拉”到5px。      <br/>
+<img src="http://litten.github.io/assets/blogImg/jiugongge3.jpg" alt="把格子间的距离“拉”到5px" /><br/>
+到这一步，简单的九宫格是完成了，但hover之后会发现，格子的边会被挡住（格子5的下边和右边分别被格子8和格子6挡住）。因为这里“公用边”的思路准确来说是“重合边”，是用负值的margin强制定位的。而我的解决方式是hover时添加<code>z-index:999</code>，让hover到的格子在最上层显示而不会被挡住。同时，不要忘记在9个div的css里面添加一句让z-index生效的<code>position: relative;</code>，具体原因看<a href="http://www.csser.com/question/4f4332dedbc7b0ac4c00034e">这里</a>。</p>
+
+<p>代码君：         <br/>
+1.html：</p>
+
+<pre><code>&lt;div id="test0"&gt;
+    &lt;div&gt;1&lt;/div&gt;
+    &lt;div class="lr_indent"&gt;2&lt;/div&gt;
+    &lt;div&gt;3&lt;/div&gt;
+    &lt;div class="tb_indent"&gt;4&lt;/div&gt;
+    &lt;div class="lr_indent tb_indent"&gt;5&lt;/div&gt;
+    &lt;div class="tb_indent"&gt;6&lt;/div&gt;
+    &lt;div&gt;7&lt;/div&gt;
+    &lt;div class="lr_indent"&gt;8&lt;/div&gt;
+    &lt;div&gt;9&lt;/div&gt;
+&lt;/div&gt;
+</code></pre>
+
+<p>2.css:</p>
+
+<pre><code>#test0{
+    margin: 30px;
+    width: 200px;
+    height: 200px;
+}
+#test0 div{
+    width: 50px;
+    height: 50px;
+    float: left;
+    background: #eee;
+    border: 5px solid #00f;
+    text-align: center;
+    line-height: 50px;
+    color: #090;
+    position: relative;
+}
+#test0 .lr_indent{
+    margin-left: -5px;
+    margin-right: -5px;
+}
+#test0 .tb_indent{
+    margin-top: -5px;
+    margin-bottom: -5px;
+}
+#test0 div:hover{
+    border: 5px solid #f00;
+    z-index: 999;
+    background: #eee;/*必须加这一句，在IE6，7有bug*/
+}
+</code></pre>
+
+<p><code>思考</code>：这样的方式好吗？不够好。</p>
+
+<pre><code>* 这才是9宫格，如果是16，25，…，81个格子，设置margin缩进的人力代价是很高的。              
+* 兼容性，在IE6，7下，负值margin在hover时候有bug。
+</code></pre>
+
+<p><img src="http://litten.github.io/assets/blogImg/jiugongge4.jpg" alt="ie6，7下，hover时负值margin-left不起效" /></p>
+
+<h2><strong>后来的想法</strong></h2>
+
+<p>经过第一次尝试，我得到一个经验：<code>要用一种通用的方法去解决“公用边”</code>，而不是分别设置.lr_indent和.tb_indent。
+随即我想到了表格。作为table，它有个很突出的属性，就是合并border，css里面的设置为<code>border-collapse:collapse;</code>。ok，这就是key point。</p>
+
+<p>按照这个思路，我简单的编写了代码，一开始我把hover定位到td上面去，发现hover时也会出现第一个想法中“挡住”的情况。而且，去将td的position改变，再添加z-index的方法是不可能有用的(z-index不会起效)。</p>
+
+<p>我的方法是在td中包含一个span，把hover定位到span中去，td设置为<code>position:relative;</code>，span设置为<code>position:absolute;</code>，这时候的hover就可以设置让span的border不被挡住展示了。      <br/>
+代码君又来了：      <br/>
+html：</p>
+
+<pre><code>&lt;div id="test1"&gt;
+    &lt;table&gt;
+        &lt;tr&gt;
+            &lt;td&gt;&lt;span&gt;1&lt;/span&gt;&lt;/td&gt;
+            &lt;td&gt;&lt;span&gt;2&lt;/span&gt;&lt;/td&gt;
+            &lt;td&gt;&lt;span&gt;3&lt;/span&gt;&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+            &lt;td&gt;&lt;span&gt;4&lt;/span&gt;&lt;/td&gt;
+            &lt;td&gt;&lt;span&gt;5&lt;/span&gt;&lt;/td&gt;
+            &lt;td&gt;&lt;span&gt;6&lt;/span&gt;&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+            &lt;td&gt;&lt;span&gt;7&lt;/span&gt;&lt;/td&gt;
+            &lt;td&gt;&lt;span&gt;8&lt;/span&gt;&lt;/td&gt;
+            &lt;td&gt;&lt;span&gt;9&lt;/span&gt;&lt;/td&gt;
+        &lt;/tr&gt;
+    &lt;/table&gt;
+&lt;/div&gt;
+</code></pre>
+
+<p>css：</p>
+
+<pre><code>*{
+    margin:0;
+    padding: 0;
+}
+table{
+    border-collapse: collapse;
+}
+#test1 td{
+    width: 50px;
+    height: 50px;
+    background: #eee;
+    position: relative;
+    border: 5px solid #00f;
+    text-align: center;
+}
+#test1 td span{
+    color: #090;
+    display:block;
+    width: 50px;
+    height: 50px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    line-height: 50px;
+}
+#test1 td span:hover{
+    border: 5px solid #f00;
+    margin-top:-5px;
+    margin-left: -5px;
+}
+</code></pre>
+
+<p>别忘了span在hover时，必须设置一个负的<code>margein-top</code>和<code>margein-left</code>，以保证红色边框恰好定位在格子四周。见css君最后的片段。假如不设置，你看到的将是这样：  <br/>
+<img src="http://litten.github.io/assets/blogImg/jiugongge5.jpg" alt="未设置span:hover的margin" />    <br/>
+本以为已经大功告成了，在IE中测试却让我傻了眼：   <br/>
+<img src="http://litten.github.io/assets/blogImg/jiugongge6.jpg" alt="IE7下的情景" />  <br/>
+（ps：作为前端一枚，我已经做好了妥妥的心理准备，但此情此景还是让人喷出一口老血……）</p>
+
+<h2><strong>改进，改进</strong></h2>
+
+<p>说实话，table和div之争这么多年，大家都在页面中用越来越多的div，而越发的鄙视table，反而对table的熟悉程度反应了前端们的基础是否扎实。吃一堑长一智，这句话特别适用于在table中翻江倒海的亲们。</p>
+
+<p>改进！</p>
+
+<p>首先这个bug（也无所谓是不是bug，算是浏览器的差异性吧）我知道，在table的td里面设置了<code>position:relative;</code>就会在IE中出现这样的情况。注意是所有的IE哦，包括IE10。而根据第二个思路，最后的hover定位的元素为span，它本身设定为<code>position:absolute;</code>它的父级元素必须得设置<code>position:relative;</code>才能完成题目功能，这是毋庸置疑的。</p>
+
+<p>既然现在span的父级td不能设置<code>position:relative;</code>，我就在它们之间添加一个div，用来做span的容器。</p>
+
+<p>代码君再一次来了：      <br/>
+html:</p>
+
+<pre><code>&lt;div id="test2"&gt;
+    &lt;table&gt;
+        &lt;tr&gt;
+            &lt;td&gt;&lt;div&gt;&lt;span&gt;1&lt;/span&gt;&lt;/div&gt;&lt;/td&gt;
+            &lt;td&gt;&lt;div&gt;&lt;span&gt;2&lt;/span&gt;&lt;/div&gt;&lt;/td&gt;
+            &lt;td&gt;&lt;div&gt;&lt;span&gt;3&lt;/span&gt;&lt;/div&gt;&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+            &lt;td&gt;&lt;div&gt;&lt;span&gt;4&lt;/span&gt;&lt;/div&gt;&lt;/td&gt;
+            &lt;td&gt;&lt;div&gt;&lt;span&gt;5&lt;/span&gt;&lt;/div&gt;&lt;/td&gt;
+            &lt;td&gt;&lt;div&gt;&lt;span&gt;6&lt;/span&gt;&lt;/div&gt;&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+            &lt;td&gt;&lt;div&gt;&lt;span&gt;7&lt;/span&gt;&lt;/div&gt;&lt;/td&gt;
+            &lt;td&gt;&lt;div&gt;&lt;span&gt;8&lt;/span&gt;&lt;/div&gt;&lt;/td&gt;
+            &lt;td&gt;&lt;div&gt;&lt;span&gt;9&lt;/span&gt;&lt;/div&gt;&lt;/td&gt;
+        &lt;/tr&gt;
+    &lt;/table&gt;
+&lt;/div&gt;
+</code></pre>
+
+<p>css:</p>
+
+<pre><code>*{
+    margin:0;
+    padding: 0;
+}
+table{
+    border-collapse: collapse;
+}
+#test2 td{
+    width: 50px;
+    height: 50px;
+    background: #eee;
+    border: 5px solid #00f;
+    text-align: center;
+    vertical-align: top;
+}
+#test2 td div{
+    position:relative;
+    width: 50px;
+    height: 50px;
+}
+#test2 td div span{
+    color: #090;
+    display:block;
+    width: 50px;
+    height: 50px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    line-height: 50px;
+}
+#test2 td div span:hover{
+    border: 5px solid #f00;
+    margin-left: -5px;
+    margin-top: -5px;
+}
+</code></pre>
+
+<p>OK，效果达成！         <br/>
+<img src="http://litten.github.io/assets/blogImg/jiugongge7.jpg" alt="最终完成的效果" />    <br/>
+可以猛点这里看看<a href="http://litten.github.io/assets/demo/jiugongge_demo.html">demo</a>。</p>
+
+<p><strong>最后吐槽，不对，总结一下下：</strong></p>
+
+<pre><code>* 先到IE上去测，再转到其它浏览器，以少走弯路，这叫擒贼先擒王-_-!；        
+* win8的metro布局最近挺流行的，有时候table比div好用；          
+* IE君，你真是……此处省略1024个字                
+</code></pre>
+
+<p>这个系列打算写两篇文章，下一篇介绍另外一种更简洁的方法。:)</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Hello World]]></title>
+    <link href="http://litten.github.io/blog/2012/12/13/hello-world/"/>
+    <updated>2012-12-13T01:39:00+08:00</updated>
+    <id>http://litten.github.io/blog/2012/12/13/hello-world</id>
+    <content type="html"><![CDATA[<p>在Winiex的推荐和帮助下，这个octopress博客终于搭建起来了。</p>
+
+<p>折腾了两天多，在github page上看到自己的博客加载下来时，突然有种错综复杂的恍惚感。是的，它不是qq空间，不是新浪博客，不是豆瓣小站，也不是贴吧。它更像是属于自己的一块小小的领地，因而我满足于这种归属感。我愿在上面安静劳作。</p>
+
+<p>一个农民，通过自身努力终于分到了一块地，不再需要在地主的土地上创造流量价值时，于是翻身作主的他可以宣告说：Hello World。当然这个农民确切来说是个码农。</p>
+
+<p>感谢Zespia提供的slash主题。我很喜欢这种色调。</p>
+]]></content>
+  </entry>
+  
+</feed>

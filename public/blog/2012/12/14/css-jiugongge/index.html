@@ -1,0 +1,374 @@
+
+<!DOCTYPE HTML>
+
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<title>有趣的css面试小题目——九宫格(一) - Litten's Blog</title>
+	<meta name="author" content="Litten">
+
+	
+	<meta name="description" content="有趣的css面试小题目——九宫格(一) 前段时间，我的 leader Henry在群里面分享了一道一淘的面试题。 题目非常的有趣，忙完前阵的工作之后突然记起，也尝试做了一下。 9个元素，每个50*50px，排成九宫格
+默认是border颜色为blue，hover到格子上变成red（兼容到IE6 &hellip;">
+	
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+	<link href="http://feed.feedsky.com/litten" rel="alternate" title="Litten's Blog" type="application/atom+xml">
+	
+	<link rel="canonical" href="http://litten.github.io/blog/2012/12/14/css-jiugongge/">
+	<link href="/favicon.png" rel="shortcut icon">
+	<link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+	<link href="/stylesheets/font-awesome.min.css" media="screen, projection" rel="stylesheet" type="text/css">
+	<!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+	<link href='http://fonts.googleapis.com/css?family=Open+Sans:400italic,400,700' rel='stylesheet' type='text/css'>
+	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+	
+  
+
+</head>
+
+
+<body>
+	<div class="container">
+		<div class="left-col">
+			<div class="intrude-less">
+			<header id="header" class="inner"><div class="profilepic">
+	<script src="/javascripts/md5.js"></script>
+	<script type="text/javascript">
+		$(function(){
+			$('.profilepic').append("<img src='/images/social/litten.png' alt='Profile Picture' style='width: 160px;' />");
+		});
+	</script>
+</div>
+
+<hgroup>
+  <h1><a href="/">Litten</a></h1>
+</hgroup>
+<p class="subtitle">Simple and clear</p>
+<nav id="main-nav"><ul class="nav">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+</ul>
+
+</nav>
+<nav id="sub-nav">
+	<div class="social">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<a class="weibo" target="_blank" href="http://weibo.com/litten225" title="weibo">新浪微博</a>
+		
+		
+		<a class="rss" target="_blank" href="http://feed.feedsky.com/litten" title="RSS">RSS</a>
+		
+	</div>
+</nav>
+</header>				
+			</div>
+		</div>	
+		<div class="mid-col">
+			
+				
+			
+			<div class="mid-col-container">
+				<div id="content" class="inner"><article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+	<h1 class="title" itemprop="name">有趣的css面试小题目——九宫格(一)</h1>
+	<div class="entry-content" itemprop="articleBody"><p>前段时间，我的 leader Henry在群里面分享了一道<a href="http://www.etao.com/">一淘</a>的面试题。         题目非常的有趣，忙完前阵的工作之后突然记起，也尝试做了一下。</p>
+
+<pre><code>9个元素，每个50*50px，排成九宫格
+默认是border颜色为blue，hover到格子上变成red（兼容到IE6）
+</code></pre>
+
+<p><img src="/assets/blogImg/jiugongge1.jpg" alt="css题目" /></p>
+
+<!--more-->
+
+
+<p>做成九宫格大家都会，但题目的陷阱就在hover上。鼠标hover到格子4，格子5时，其实他们“共用”了一条边。由于是纯css实现的，我们不可能说用js去动态改变dom，因此怎样实现“公用边”就成为了难点。</p>
+
+<p><strong>尝试的过程：</strong></p>
+
+<pre><code>* 我的第一个想法，用“叠加”的方式实现“公用边”；        
+* 后来的想法，用table的border-collapse实现“公用边”；          
+* 在table想法的基础上改进；
+* 一种更简便的做法，不需要border，见九宫格(二)                       
+</code></pre>
+
+<h2><strong>我的第一个想法</strong></h2>
+
+<p>先做做看，尝试永远是第一步。我将9个div都设置了5px的border，排成了九宫格，添加了hover，这时候初始的效果是：   <br/>
+<img src="/assets/blogImg/jiugongge2.jpg" alt="初始效果" />    <br/>
+这样其实格子之间的距离是两倍border（10px）。需要再将中间的一竖（2，5，8）设置<code>margin-left:-5px;margin-right:-5px;</code>,再将中间的一横（3，4，5）设置<code>margin-top:-5px;margin-bottom:-5px;</code>，这样等于是强制把格子间的距离“拉”到5px。      <br/>
+<img src="/assets/blogImg/jiugongge3.jpg" alt="把格子间的距离“拉”到5px" /><br/>
+到这一步，简单的九宫格是完成了，但hover之后会发现，格子的边会被挡住（格子5的下边和右边分别被格子8和格子6挡住）。因为这里“公用边”的思路准确来说是“重合边”，是用负值的margin强制定位的。而我的解决方式是hover时添加<code>z-index:999</code>，让hover到的格子在最上层显示而不会被挡住。同时，不要忘记在9个div的css里面添加一句让z-index生效的<code>position: relative;</code>，具体原因看<a href="http://www.csser.com/question/4f4332dedbc7b0ac4c00034e">这里</a>。</p>
+
+<p>代码君：         <br/>
+1.html：</p>
+
+<pre><code>&lt;div id="test0"&gt;
+    &lt;div&gt;1&lt;/div&gt;
+    &lt;div class="lr_indent"&gt;2&lt;/div&gt;
+    &lt;div&gt;3&lt;/div&gt;
+    &lt;div class="tb_indent"&gt;4&lt;/div&gt;
+    &lt;div class="lr_indent tb_indent"&gt;5&lt;/div&gt;
+    &lt;div class="tb_indent"&gt;6&lt;/div&gt;
+    &lt;div&gt;7&lt;/div&gt;
+    &lt;div class="lr_indent"&gt;8&lt;/div&gt;
+    &lt;div&gt;9&lt;/div&gt;
+&lt;/div&gt;
+</code></pre>
+
+<p>2.css:</p>
+
+<pre><code>#test0{
+    margin: 30px;
+    width: 200px;
+    height: 200px;
+}
+#test0 div{
+    width: 50px;
+    height: 50px;
+    float: left;
+    background: #eee;
+    border: 5px solid #00f;
+    text-align: center;
+    line-height: 50px;
+    color: #090;
+    position: relative;
+}
+#test0 .lr_indent{
+    margin-left: -5px;
+    margin-right: -5px;
+}
+#test0 .tb_indent{
+    margin-top: -5px;
+    margin-bottom: -5px;
+}
+#test0 div:hover{
+    border: 5px solid #f00;
+    z-index: 999;
+    background: #eee;/*必须加这一句，在IE6，7有bug*/
+}
+</code></pre>
+
+<p><code>思考</code>：这样的方式好吗？不够好。</p>
+
+<pre><code>* 这才是9宫格，如果是16，25，…，81个格子，设置margin缩进的人力代价是很高的。              
+* 兼容性，在IE6，7下，负值margin在hover时候有bug。
+</code></pre>
+
+<p><img src="/assets/blogImg/jiugongge4.jpg" alt="ie6，7下，hover时负值margin-left不起效" /></p>
+
+<h2><strong>后来的想法</strong></h2>
+
+<p>经过第一次尝试，我得到一个经验：<code>要用一种通用的方法去解决“公用边”</code>，而不是分别设置.lr_indent和.tb_indent。
+随即我想到了表格。作为table，它有个很突出的属性，就是合并border，css里面的设置为<code>border-collapse:collapse;</code>。ok，这就是key point。</p>
+
+<p>按照这个思路，我简单的编写了代码，一开始我把hover定位到td上面去，发现hover时也会出现第一个想法中“挡住”的情况。而且，去将td的position改变，再添加z-index的方法是不可能有用的(z-index不会起效)。</p>
+
+<p>我的方法是在td中包含一个span，把hover定位到span中去，td设置为<code>position:relative;</code>，span设置为<code>position:absolute;</code>，这时候的hover就可以设置让span的border不被挡住展示了。      <br/>
+代码君又来了：      <br/>
+html：</p>
+
+<pre><code>&lt;div id="test1"&gt;
+    &lt;table&gt;
+        &lt;tr&gt;
+            &lt;td&gt;&lt;span&gt;1&lt;/span&gt;&lt;/td&gt;
+            &lt;td&gt;&lt;span&gt;2&lt;/span&gt;&lt;/td&gt;
+            &lt;td&gt;&lt;span&gt;3&lt;/span&gt;&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+            &lt;td&gt;&lt;span&gt;4&lt;/span&gt;&lt;/td&gt;
+            &lt;td&gt;&lt;span&gt;5&lt;/span&gt;&lt;/td&gt;
+            &lt;td&gt;&lt;span&gt;6&lt;/span&gt;&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+            &lt;td&gt;&lt;span&gt;7&lt;/span&gt;&lt;/td&gt;
+            &lt;td&gt;&lt;span&gt;8&lt;/span&gt;&lt;/td&gt;
+            &lt;td&gt;&lt;span&gt;9&lt;/span&gt;&lt;/td&gt;
+        &lt;/tr&gt;
+    &lt;/table&gt;
+&lt;/div&gt;
+</code></pre>
+
+<p>css：</p>
+
+<pre><code>*{
+    margin:0;
+    padding: 0;
+}
+table{
+    border-collapse: collapse;
+}
+#test1 td{
+    width: 50px;
+    height: 50px;
+    background: #eee;
+    position: relative;
+    border: 5px solid #00f;
+    text-align: center;
+}
+#test1 td span{
+    color: #090;
+    display:block;
+    width: 50px;
+    height: 50px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    line-height: 50px;
+}
+#test1 td span:hover{
+    border: 5px solid #f00;
+    margin-top:-5px;
+    margin-left: -5px;
+}
+</code></pre>
+
+<p>别忘了span在hover时，必须设置一个负的<code>margein-top</code>和<code>margein-left</code>，以保证红色边框恰好定位在格子四周。见css君最后的片段。假如不设置，你看到的将是这样：  <br/>
+<img src="/assets/blogImg/jiugongge5.jpg" alt="未设置span:hover的margin" />    <br/>
+本以为已经大功告成了，在IE中测试却让我傻了眼：   <br/>
+<img src="/assets/blogImg/jiugongge6.jpg" alt="IE7下的情景" />  <br/>
+（ps：作为前端一枚，我已经做好了妥妥的心理准备，但此情此景还是让人喷出一口老血……）</p>
+
+<h2><strong>改进，改进</strong></h2>
+
+<p>说实话，table和div之争这么多年，大家都在页面中用越来越多的div，而越发的鄙视table，反而对table的熟悉程度反应了前端们的基础是否扎实。吃一堑长一智，这句话特别适用于在table中翻江倒海的亲们。</p>
+
+<p>改进！</p>
+
+<p>首先这个bug（也无所谓是不是bug，算是浏览器的差异性吧）我知道，在table的td里面设置了<code>position:relative;</code>就会在IE中出现这样的情况。注意是所有的IE哦，包括IE10。而根据第二个思路，最后的hover定位的元素为span，它本身设定为<code>position:absolute;</code>它的父级元素必须得设置<code>position:relative;</code>才能完成题目功能，这是毋庸置疑的。</p>
+
+<p>既然现在span的父级td不能设置<code>position:relative;</code>，我就在它们之间添加一个div，用来做span的容器。</p>
+
+<p>代码君再一次来了：      <br/>
+html:</p>
+
+<pre><code>&lt;div id="test2"&gt;
+    &lt;table&gt;
+        &lt;tr&gt;
+            &lt;td&gt;&lt;div&gt;&lt;span&gt;1&lt;/span&gt;&lt;/div&gt;&lt;/td&gt;
+            &lt;td&gt;&lt;div&gt;&lt;span&gt;2&lt;/span&gt;&lt;/div&gt;&lt;/td&gt;
+            &lt;td&gt;&lt;div&gt;&lt;span&gt;3&lt;/span&gt;&lt;/div&gt;&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+            &lt;td&gt;&lt;div&gt;&lt;span&gt;4&lt;/span&gt;&lt;/div&gt;&lt;/td&gt;
+            &lt;td&gt;&lt;div&gt;&lt;span&gt;5&lt;/span&gt;&lt;/div&gt;&lt;/td&gt;
+            &lt;td&gt;&lt;div&gt;&lt;span&gt;6&lt;/span&gt;&lt;/div&gt;&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+            &lt;td&gt;&lt;div&gt;&lt;span&gt;7&lt;/span&gt;&lt;/div&gt;&lt;/td&gt;
+            &lt;td&gt;&lt;div&gt;&lt;span&gt;8&lt;/span&gt;&lt;/div&gt;&lt;/td&gt;
+            &lt;td&gt;&lt;div&gt;&lt;span&gt;9&lt;/span&gt;&lt;/div&gt;&lt;/td&gt;
+        &lt;/tr&gt;
+    &lt;/table&gt;
+&lt;/div&gt;
+</code></pre>
+
+<p>css:</p>
+
+<pre><code>*{
+    margin:0;
+    padding: 0;
+}
+table{
+    border-collapse: collapse;
+}
+#test2 td{
+    width: 50px;
+    height: 50px;
+    background: #eee;
+    border: 5px solid #00f;
+    text-align: center;
+    vertical-align: top;
+}
+#test2 td div{
+    position:relative;
+    width: 50px;
+    height: 50px;
+}
+#test2 td div span{
+    color: #090;
+    display:block;
+    width: 50px;
+    height: 50px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    line-height: 50px;
+}
+#test2 td div span:hover{
+    border: 5px solid #f00;
+    margin-left: -5px;
+    margin-top: -5px;
+}
+</code></pre>
+
+<p>OK，效果达成！         <br/>
+<img src="/assets/blogImg/jiugongge7.jpg" alt="最终完成的效果" />    <br/>
+可以猛点这里看看<a href="/assets/demo/jiugongge_demo.html">demo</a>。</p>
+
+<p><strong>最后吐槽，不对，总结一下下：</strong></p>
+
+<pre><code>* 先到IE上去测，再转到其它浏览器，以少走弯路，这叫擒贼先擒王-_-!；        
+* win8的metro布局最近挺流行的，有时候table比div好用；          
+* IE君，你真是……此处省略1024个字                
+</code></pre>
+
+<p>这个系列打算写两篇文章，下一篇介绍另外一种更简洁的方法。:)</p>
+</div>
+
+</article>
+
+	<div class="share">
+	<div class="jiathis_style" style="float:right;">
+	    <a class="jiathis_button_tsina" title="分享到新浪微博"><span class="jiathis_txt jtico jtico_tsina"></span></a>
+	    <a class="jiathis_button_tqq" title="分享到腾讯微博"><span class="jiathis_txt jtico jtico_tqq"></span></a>
+	    <a class="jiathis_button_renren" title="分享到人人网"><span class="jiathis_txt jtico jtico_renren"></span></a>
+	    <a class="jiathis_button_qzone" title="分享到QQ空间"><span class="jiathis_txt jtico jtico_qzone"></span></a>
+	    <a class="jiathis_button_douban" title="分享到豆瓣"><span class="jiathis_txt jtico jtico_douban"></span></a>
+	    <a class="jiathis_button_weixin" title="分享到微信"><span class="jiathis_txt jtico jtico_weixin"></span></a>
+	</div>
+	<!-- JiaThis Button BEGIN -->
+	<script type="text/javascript" src="http://v3.jiathis.com/code/jia.js?uid=1373344788098833" charset="utf-8"></script>
+</div>
+
+<div id="uyan_frame"></div>
+<script type="text/javascript" src="http://v2.uyan.cc/code/uyan.js"></script>
+</div>
+			</div>
+			<footer id="footer" class="inner"><hr>
+<p>
+  Copyright &copy; 2013 - Litten -
+  <!-- <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span> -->
+</p>
+</footer>
+			
+
+
+
+
+
+
+
+
+
+
+
+		</div>
+	</div>
+</body>
+</html>

@@ -1,0 +1,274 @@
+
+<!DOCTYPE HTML>
+
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<title>有趣的css面试小题目——九宫格(二) - Litten's Blog</title>
+	<meta name="author" content="Litten">
+
+	
+	<meta name="description" content="有趣的css面试小题目——九宫格(二) 书接上回，上回在这。 9个元素，每个50*50px，排成九宫格
+默认是border颜色为blue，hover到格子上变成red（兼容到IE6） 题目的关键是解决“公用边”，上次我主要做了两个方面的尝试： * 用负margin使元素的border叠加
+* &hellip;">
+	
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+	<link href="http://feed.feedsky.com/litten" rel="alternate" title="Litten's Blog" type="application/atom+xml">
+	
+	<link rel="canonical" href="http://litten.github.io/blog/2012/12/21/css-jiugongge2/">
+	<link href="/favicon.png" rel="shortcut icon">
+	<link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+	<link href="/stylesheets/font-awesome.min.css" media="screen, projection" rel="stylesheet" type="text/css">
+	<!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+	<link href='http://fonts.googleapis.com/css?family=Open+Sans:400italic,400,700' rel='stylesheet' type='text/css'>
+	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+	
+  
+
+</head>
+
+
+<body>
+	<div class="container">
+		<div class="left-col">
+			<div class="intrude-less">
+			<header id="header" class="inner"><div class="profilepic">
+	<script src="/javascripts/md5.js"></script>
+	<script type="text/javascript">
+		$(function(){
+			$('.profilepic').append("<img src='/images/social/litten.png' alt='Profile Picture' style='width: 160px;' />");
+		});
+	</script>
+</div>
+
+<hgroup>
+  <h1><a href="/">Litten</a></h1>
+</hgroup>
+<p class="subtitle">Simple and clear</p>
+<nav id="main-nav"><ul class="nav">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+</ul>
+
+</nav>
+<nav id="sub-nav">
+	<div class="social">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<a class="weibo" target="_blank" href="http://weibo.com/litten225" title="weibo">新浪微博</a>
+		
+		
+		<a class="rss" target="_blank" href="http://feed.feedsky.com/litten" title="RSS">RSS</a>
+		
+	</div>
+</nav>
+</header>				
+			</div>
+		</div>	
+		<div class="mid-col">
+			
+				
+			
+			<div class="mid-col-container">
+				<div id="content" class="inner"><article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+	<h1 class="title" itemprop="name">有趣的css面试小题目——九宫格(二)</h1>
+	<div class="entry-content" itemprop="articleBody"><p>书接上回，<a href="http://litten.github.com/blog/blog/2012/12/14/css-jiugongge/">上回在这</a>。</p>
+
+<pre><code>9个元素，每个50*50px，排成九宫格
+默认是border颜色为blue，hover到格子上变成red（兼容到IE6）
+</code></pre>
+
+<p><img src="/assets/blogImg/jiugongge1.jpg" alt="css题目" /></p>
+
+<p>题目的关键是解决“公用边”，上次我主要做了两个方面的尝试：</p>
+
+<pre><code>* 用负margin使元素的border叠加
+* 用table的border-collapse实现边框合并
+</code></pre>
+
+<p>这一次的思路则更加简明，也是个人认为是更好的方法。感谢<a href="http://weibo.com/u/1666828424">队长</a>提供的思路。</p>
+
+<!-- more -->
+
+
+<h2><strong>能不能不用border？</strong></h2>
+
+<p><img src="/assets/blogImg/jiugongge10.jpg" alt="一个格子的透视图，a其实充当了div的“边框”" />    <br/>
+如果不用border，怎么实现hover后，格子四周变红呢？那肯定是两个dom嵌套在一起，一大一小，小的dom作为“格子”，大的dom作为格子的红色“边框”。先看我初始化的一个格子设定：       <br/>
+html：</p>
+
+<pre><code>&lt;div id="test"&gt;
+    &lt;a href="#"&gt;&lt;div&gt;1&lt;/div&gt;&lt;/a&gt;
+&lt;/div&gt;
+</code></pre>
+
+<p>初始css:</p>
+
+<pre><code>#test div{
+    width: 50px;
+    line-height: 50px;
+    text-align:center;
+    background: #AAA;
+}
+#test a{
+    width: 55px;
+    line-height: 55px;
+    float: left;
+}
+#test a:hover{
+    background: red;
+}
+</code></pre>
+
+<p>由于a标签设置了宽度为55px，div标签设置了宽度为50px，这时候格子hover看起来只露出了<strong>右边</strong>的5px红色部分。</p>
+
+<p>接下来，div添加属性<code>margin-top:5px;margin-right:5px</code>，这时可以显示<strong>上部</strong>的5px边框。再接着，在div的容器，也就是a标签设置<code>padding-left:5px;padding-bottom:5px;</code>，使格子<strong>左边框</strong>和<strong>下边框</strong>都显示出来。</p>
+
+<p><img src="/assets/blogImg/jiugongge8.jpg" alt="完成一个格子的设置步骤" /></p>
+
+<p>那么为什么要将a标签设置为55px，再进行一系列关于margin和padding的设置呢，原因我们最后再说。</p>
+
+<p>因此修改后的css为：</p>
+
+<pre><code>#test div{
+    width: 50px;
+    line-height: 50px;
+    text-align:center;
+    background: #AAA;
+    margin-right:5px;
+    margin-top:5px;
+}
+#test a{
+    width: 55px;
+    line-height: 55px;
+    float: left;
+    margin-right: -5px;
+    margin-bottom: -5px;
+}
+#test a:hover{
+    background: red;
+}
+</code></pre>
+
+<h2><strong>九个格子会怎样？</strong></h2>
+
+<p>将a标签左浮动，同时添加到九个格子，这时候的效果是：两个格子之间会有10px的距离。</p>
+
+<p>为解决“公用边”问题，在a标签添加负值的margin：<code>margin-right:-5px;margin-bottom:-5px;</code>。最后将最外层的容器#test的宽度和高度设置为170px(50<em>3+5</em>4)，背景设置为蓝色。这时候大功告成了。</p>
+
+<p><img src="/assets/blogImg/jiugongge9.jpg" alt="完成九个格子的设置步骤" /></p>
+
+<p>最终的代码是：     <br/>
+html：</p>
+
+<pre><code>&lt;div id="test"&gt;
+    &lt;a href=""&gt;&lt;div&gt;1&lt;/div&gt;&lt;/a&gt;
+    &lt;a href=""&gt;&lt;div&gt;2&lt;/div&gt;&lt;/a&gt;
+    &lt;a href=""&gt;&lt;div&gt;3&lt;/div&gt;&lt;/a&gt;
+    &lt;a href=""&gt;&lt;div&gt;4&lt;/div&gt;&lt;/a&gt;
+    &lt;a href=""&gt;&lt;div&gt;5&lt;/div&gt;&lt;/a&gt;
+    &lt;a href=""&gt;&lt;div&gt;6&lt;/div&gt;&lt;/a&gt;
+    &lt;a href=""&gt;&lt;div&gt;7&lt;/div&gt;&lt;/a&gt;
+    &lt;a href=""&gt;&lt;div&gt;8&lt;/div&gt;&lt;/a&gt;
+    &lt;a href=""&gt;&lt;div&gt;9&lt;/div&gt;&lt;/a&gt;
+&lt;/div&gt;
+</code></pre>
+
+<p>css：</p>
+
+<pre><code>#test{
+    width: 170px;
+    height:170px;
+    background: blue;
+    margin: 0 auto;
+}
+#test div{
+    width: 50px;
+    line-height: 50px;
+    text-align:center;
+    background: #AAA;
+    margin-right:5px;/*这句不要也可以*/
+    margin-top:5px;
+}
+#test a{
+    width: 55px;
+    line-height: 55px;
+    float: left;
+    text-decoration: none;
+    padding-left: 5px;
+    padding-bottom: 5px;
+    margin-right: -5px;
+    margin-bottom: -5px;
+}
+#test a:hover{
+    background: red;
+}
+</code></pre>
+
+<h2><strong>巧妙在哪里？</strong></h2>
+
+<ul>
+<li>a标签hover前不设置背景色，露出最外层#test的蓝色背景，看起来格子有蓝色的边框；a标签hover时背景色设置为红色，充当了格子的红色边框；</li>
+<li>a标签设置为55px是最关键的一点。按照此思路和题目要求，格子是50px大小，边框的dom应该是60px大小。而此时a设置为55px，因为a要设置<code>padding-left:5px;padding-bottom:5px;</code>，刚好a就有60px大小了；而a里面的div要设置<code>margin-top:5px;margin-right:5px</code>（其实margin-right也可以不加）,这时候margin和padding就达到了一个“中和”的效果，使布局不发生偏差。</li>
+</ul>
+
+
+<p>点此看<a href="/assets/demo/jiugongge_demo2.html">demo</a>。</p>
+</div>
+
+</article>
+
+	<div class="share">
+	<div class="jiathis_style" style="float:right;">
+	    <a class="jiathis_button_tsina" title="分享到新浪微博"><span class="jiathis_txt jtico jtico_tsina"></span></a>
+	    <a class="jiathis_button_tqq" title="分享到腾讯微博"><span class="jiathis_txt jtico jtico_tqq"></span></a>
+	    <a class="jiathis_button_renren" title="分享到人人网"><span class="jiathis_txt jtico jtico_renren"></span></a>
+	    <a class="jiathis_button_qzone" title="分享到QQ空间"><span class="jiathis_txt jtico jtico_qzone"></span></a>
+	    <a class="jiathis_button_douban" title="分享到豆瓣"><span class="jiathis_txt jtico jtico_douban"></span></a>
+	    <a class="jiathis_button_weixin" title="分享到微信"><span class="jiathis_txt jtico jtico_weixin"></span></a>
+	</div>
+	<!-- JiaThis Button BEGIN -->
+	<script type="text/javascript" src="http://v3.jiathis.com/code/jia.js?uid=1373344788098833" charset="utf-8"></script>
+</div>
+
+<div id="uyan_frame"></div>
+<script type="text/javascript" src="http://v2.uyan.cc/code/uyan.js"></script>
+</div>
+			</div>
+			<footer id="footer" class="inner"><hr>
+<p>
+  Copyright &copy; 2013 - Litten -
+  <!-- <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span> -->
+</p>
+</footer>
+			
+
+
+
+
+
+
+
+
+
+
+
+		</div>
+	</div>
+</body>
+</html>

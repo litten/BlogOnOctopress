@@ -1,0 +1,345 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: js | Litten's Blog]]></title>
+  <link href="http://litten.github.io/blog/categories/js/atom.xml" rel="self"/>
+  <link href="http://litten.github.io/"/>
+  <updated>2013-09-21T22:27:25+08:00</updated>
+  <id>http://litten.github.io/</id>
+  <author>
+    <name><![CDATA[Litten]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[网易“聚合阅读”布局的实现]]></title>
+    <link href="http://litten.github.io/blog/2013/05/03/my-news-reader-box/"/>
+    <updated>2013-05-03T10:55:00+08:00</updated>
+    <id>http://litten.github.io/blog/2013/05/03/my-news-reader-box</id>
+    <content type="html"><![CDATA[<p><img src="/assets/blogImg/myReader0.jpg" alt="聚合阅读" /></p>
+
+<p>网易<a href="http://news.tag.163.com/">聚合阅读</a>的出现的确让人惊艳了一下。流畅的交互,使碎片化的新闻资讯像报纸一样摊在眼前,这是信息大爆炸的时代产物。不管你能不能接受这种新阅读形式，事实上，每天越来越多的新闻层出不穷，还没被人看到就已成为了“旧闻”。回归报纸的版面设计，堆叠新闻模块，让用户告别一条接一条整齐的新闻链接，而是在一个版面上提供更多的信息，不失为一种尝试。</p>
+
+<p>而抛去产品的层面，从前端方向来看，“聚合阅读”也有许多值得学习的地方。这几天研究了一下源码，谈谈它随机布局的实现，以及一些优化的措施。</p>
+
+<h2><strong>demo</strong></h2>
+
+<p>点击按钮可以改变布局：</p>
+
+<!--more-->
+
+
+
+
+<iframe id="demoIframe" src="http://litten.github.io/assets/demo/my_news_reader/index.html" width="600" height="420" scrolling="no"></iframe>
+
+
+<h2><strong>一.怎样定义格子对象</strong></h2>
+
+<p>每个格子对象，都至少应该有这5个属性：    <br/>
+left：距离左边界的位置       <br/>
+top：距离上边界的位置         <br/>
+width：格子宽度           <br/>
+height：格子高度          <br/>
+background：格子颜色</p>
+
+<p>逐个去定义对象无疑是愚蠢的：</p>
+
+<pre><code>function Block(o){
+    return{
+        left: o.left,
+        top: o.top,
+        width: o.width,
+        height: o.height,
+        bg: o.bg
+    }
+}
+var block1 = new Block({
+    left: 0,
+    top: 0,
+    width: 50,
+    height: 50,
+    bg: "#3f3"
+});
+var block2 = …
+…
+var block37 = …
+</code></pre>
+
+<p>这样不仅不利于后期维护，而且构造格子的嵌套关系也相对麻烦。</p>
+
+<p>网易的做法是使用“交替切割”的方式来做：       <br/>
+1. 将大块先切成两列。       <br/>
+2. 左列（红色部分）再切成三行，右列（褐，黄，蓝部分）也切成三行。
+3. 对形成的6个小块，再进行列的切割</p>
+
+<p>整个做法就是“列-行-列-行-……”这样的交替切割。所以它的对象是这样设置的,其中random属性可以约定同级的cols或rows是否可以随机变换位置，width和height的值是规定一个父级块的分割比例。其设置的形式例如（例子与demo的设定无关）：</p>
+
+<pre><code>window.tagConfig.pageLayout = {
+    top: 0,
+    left: 0,
+    width: 100,
+    height: 100,
+    random: !1,
+    cols: [{
+        width: 30,
+        rows: [{
+            height: 40,
+            cols: [{
+                width: 30,
+                rows:[{
+                    height:100
+                }]
+            },{
+                width: 70,
+                rows:[{
+                    height:100
+                }]
+            }]
+        },
+        {
+            height: 30
+        },{
+            height: 30
+        }]
+    },{
+        width: 70,
+        rows:[{
+            height:100
+        }]
+    }]
+}
+</code></pre>
+
+<h2><strong>二.递归调用切割函数</strong></h2>
+
+<pre><code>function _getGrids(tag) {
+    /*domArr是拥有left,top,width,height,bg等属性的所有dom数组，_getGrids的最终目的就是生成这个数组*/
+    var domArr = [],
+    _cutGrid(tag.pageLayout,
+        function(tag) {
+            if (tag.rows || tag.cols) {
+                /*假如子级存在rows或者cols，则递归切割*/
+                _cutGrid(tag, arguments.callee);
+            }
+            else {
+                /*子级不存在rows或者cols，不再进行切割，构造domArr*/
+                …
+                domArr.push(xxx)
+                …
+            }
+        }
+    );
+    return domArr;
+}
+</code></pre>
+
+<h2><strong>三.切割函数</strong></h2>
+
+<p>切割函数挺有意思的，下次想再用一篇文章来详细写一下，在这里仅贴出参考的源码。</p>
+
+<pre><code>/*对象复制函数*/
+function _shadowClone(e) {
+    var t = {};
+    for (var n in e) e.hasOwnProperty(n) &amp;&amp; (t[n] = e[n]);
+    return t;
+}
+
+/*判断子块随机布局与否*/
+(function() {
+    function ranOrNot(e, t) {
+        var n = [];
+        typeof t == "undefined" &amp;&amp; (t = e, e = 0);
+        for (; e &lt; t; e++) n.push(e);
+        return n
+    }
+    /*随机布局*/
+    Array.prototype.randomEach = function(t) {
+        console.log(3);
+        if (typeof t != "function") throw new TypeError;
+        var n = this.length,
+        r = ranOrNot(n);
+        while (n) {
+            var i = Math.floor(Math.random() * n--);
+            if (t(this[r[i]]) === !1) break;
+            r[i] = r[n]
+        }
+    },
+    /*常规布局*/
+    Array.prototype.forEach || (Array.prototype.forEach = function(e) {
+        var t = this.length;
+        if (typeof e != "function") throw new TypeError;
+        var n = arguments[1];
+        for (var r = 0; r &lt; t; r++) r in this &amp;&amp; e.call(n, this[r], r, this)
+    })
+} )();
+
+/*切割函数*/
+function _cutGrid(tag, funcJudge) {
+    function a(a) {
+        function h(cutLength) {
+            /*复制子块对象并计算出子块top,left*/
+            var u, a = _shadowClone(cutLength);
+            c++,
+            u = c === l ? tag[cutType2.measure] - s: Math.floor(cutLength[cutType2.measure] * tag[cutType2.measure] / 100),
+            a[cutType1.offset] = i + tag[cutType1.offset],
+            a[cutType2.offset] = s + tag[cutType2.offset],
+            a[cutType1.measure] = f,
+            a[cutType2.measure] = u,
+            a.colorPattern = tag.colorPattern,
+            /*判断小块是否还需要分割*/
+            funcJudge(a),
+            s += u
+        }
+        var f, l = a[cutType2.name].length,
+        c = 0;
+        u++,
+        f = u === cutLength ? tag[cutType1.measure] - i: Math.floor(a[cutType1.measure] * tag[cutType1.measure] / 100),
+        a.random === !1 ? a[cutType2.name].forEach(h) : a[cutType2.name].randomEach(h),
+        s = 0,
+        i += f
+    }
+    /*根据大块是否有rows属性，定义两种切割方式*/
+    var cutType1, cutType2;
+    tag.rows ? (cutType1 = {
+        name: "rows",
+        measure: "height",
+        offset: "top"
+    },
+    cutType2 = {
+        name: "cols",
+        measure: "width",
+        offset: "left"
+    }) : (cutType1 = {
+        name: "cols",
+        measure: "width",
+        offset: "left"
+    },
+    cutType2 = {
+        name: "rows",
+        measure: "height",
+        offset: "top"
+    });
+    var i = 0,
+    s = 0,
+    cutLength = tag[cutType1.name].length,
+    u = 0;
+    /*是否随机布局*/
+    tag.random === !1 ? tag[cutType1.name].forEach(a) : tag[cutType1.name].randomEach(a)
+}
+</code></pre>
+
+<h2><strong>四.最后</strong></h2>
+
+<p>完成到这一步，我已不记得声明对象时出了多少次错误。各种尖括号，方括号，逗号和分号翩翩起舞时，你一定跟我一样很想念coffee的语法糖…</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[生产者-消费者模型的coffeescript实现]]></title>
+    <link href="http://litten.github.io/blog/2012/12/24/coffee-pc/"/>
+    <updated>2012-12-24T23:51:00+08:00</updated>
+    <id>http://litten.github.io/blog/2012/12/24/coffee-pc</id>
+    <content type="html"><![CDATA[<p>这两天一直在看coffeescript相关的东西，也帮一个朋友搞了个生产者-消费者模型的C语言实现。想到还没用coffeescript真正意义上写过程序，那就尝试做一下吧。</p>
+
+<p>其实<a href="http://read.douban.com/ebook/198648/">《CoffeeScript小书》</a>是暑假实习时就买了，一直比较向往着函数式编程却拖延了很久没行动起来。小书只有几十页，本是github上一个开源的项目，我喜欢这种轻巧的文字。语法部分看下来，再看下类与继承，只花了半天的时间，而且心情非常愉悦，然后就可以开始我菜鸟的第一次试飞了。</p>
+
+<p>生产者-消费者模型没什么好说的了，就是读写共享缓冲区，pv操作控制是否冲突。更多的就是冲着coffeescript来的。下面是一些凌乱但自认为有思考价值的记录，或许后续我会继续写一些coffeescript的学习笔记，再做深入的研究。</p>
+
+<!-- more -->
+
+
+<h2><strong>demo，可尝试点击“生产”“消费”按钮</strong></h2>
+
+<iframe src="http://litten.github.io/assets/demo/coffee_pc_demo/pro-con.html" width="780" height="336" scrolling="no"></iframe>
+
+
+<h2><strong>litten如是想：</strong></h2>
+
+<pre><code>* 我一定要学一门，至少一门函数式风格编程语言，没有太深远的想法，就觉得它就是我的菜       
+* 这个程序是66行的coffeescript代码，最后编译后得到了122行的js代码，说明编程效率提升显著          
+* 括号，方括号，花括号，还有逗号有时候会多烦人，特别是使用过ExtJs的人，而coffeescript可以没有     
+* 用法简洁的jquery在coffeescript里面会更简洁                   
+* 关于coffeescript的循环，它不推荐你使用for循环，而是使用“推导”，暴露在底层的循环只有while语法        
+* 事件绑定时，使用=&gt;可以免去js上下文切换this的麻烦               
+* coffeescript的数组迭代方法非常的酷，三言两语说不清             
+* javascript会是下一个JVM吗？              
+* 站在产品的角度，我认为coffeescript这名字太长了-_-!              
+</code></pre>
+
+<h2><strong>附上源码</strong></h2>
+
+<pre><code>N = 10
+
+class ProCon
+    data: 
+        mutex:1
+        empty:N
+        full:0
+        front:0
+        rear:0
+        buf: []
+    init:-&gt;
+        i = 0
+        while i&lt;N
+            newDom = $('&lt;div class="bufBox"&gt;&lt;div class="bufCover"&gt;'+i+'&lt;/div&gt;'+i+'&lt;/div&gt;')
+            $('#buf').append(newDom)
+            @data.buf.push 'e'
+            i++
+        $('#produce').click =&gt;
+            @producer()
+        $('#consume').click =&gt;
+            @consumer()
+    p:(num)-&gt;
+        return --num
+    v:(num)-&gt;
+        return ++num
+    produceItem:-&gt;
+        $('&lt;p class="desPro"&gt;生产了产品&lt;/p&gt;').insertBefore $("#des p:first")
+        return 'm'
+    consumeItem:-&gt;
+        $('&lt;p class="desCon"&gt;消费了产品&lt;/p&gt;').insertBefore $("#des p:first")
+    enterItem:(item) -&gt;
+        @data.front = (@data.front+1)%N
+        @data.buf[@data.front] = item;
+        str = "存入产品#{@data.buf[@data.front]}到缓冲区#{@data.front}"
+        $("&lt;p class='desPro'&gt;#{str}&lt;/p&gt;").insertBefore $("#des p:first")
+        $($('.bufCover')[@data.front]).animate 
+            "height":"50px"
+    removeItem:-&gt;
+        @data.rear = (@data.rear + 1) % N;
+        @data.buf[@data.rear] = 'e';
+        str = "取出产品#{@data.buf[@data.rear]}从缓冲区#{@data.rear}"
+        $("&lt;p class='desCon'&gt;#{str}&lt;/p&gt;").insertBefore $("#des p:first")
+        $($('.bufCover')[@data.rear]).animate 
+            "height":"0px"
+    producer:-&gt;
+        if @data.full==N
+            $("&lt;p class='desSpe'&gt;缓冲区已全满&lt;/p&gt;").insertBefore $("#des p:first")
+            return
+        item = @produceItem()
+        @data.empty = @p(@data.empty)
+        @data.mutex = @p(@data.mutex)
+        @enterItem(item)
+        @data.mutex = @v(@data.mutex)
+        @data.full = @v(@data.full)
+    consumer:-&gt;
+        if @data.empty==N
+            $("&lt;p class='desSpe'&gt;缓冲区已空&lt;/p&gt;").insertBefore $("#des p:first")
+            return
+        @data.full = @p(@data.full)
+        @data.mutex = @p(@data.mutex)
+        @removeItem()
+        @data.mutex = @v(@data.mutex)
+        @data.empty = @v(@data.empty)
+        @consumeItem()
+
+procon = new ProCon
+procon.init();
+</code></pre>
+]]></content>
+  </entry>
+  
+</feed>

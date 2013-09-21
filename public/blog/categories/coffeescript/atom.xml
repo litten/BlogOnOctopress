@@ -1,0 +1,236 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: coffeescript | Litten's Blog]]></title>
+  <link href="http://litten.github.io/blog/categories/coffeescript/atom.xml" rel="self"/>
+  <link href="http://litten.github.io/"/>
+  <updated>2013-09-21T22:27:25+08:00</updated>
+  <id>http://litten.github.io/</id>
+  <author>
+    <name><![CDATA[Litten]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[模式应用小分享——中介者模式(mediator)]]></title>
+    <link href="http://litten.github.io/blog/2013/01/02/mediator-model/"/>
+    <updated>2013-01-02T12:36:00+08:00</updated>
+    <id>http://litten.github.io/blog/2013/01/02/mediator-model</id>
+    <content type="html"><![CDATA[<p><img src="/assets/blogImg/mediator1.jpg" alt="实况足球" /></p>
+
+<blockquote><p>你需要一种设计模式，一定是哪里出问题了。这问题是指语言天生缺陷，不得不去寻找一种通用的解决方案。</p></blockquote>
+
+<p>程序设计最后的终点，就是要找到一种解决方案来解决问题。这句话正确无疑。但我又想起有个冷笑话，A对B说：我教你怎么去赢这盘象棋，B问怎样，A回答说：吃掉对方的“帅”就赢了啊。略去中间的过程，直接描述到结果，这其实是毫无意义的。而设计模式，又恰恰关乎中间解决问题的过程。</p>
+
+<!-- more -->
+
+
+<p>现在关于模式的文章与书籍层出不穷，我自己也在看。但当我将理论回归应用的时候，一下子就懵了。这么多的模式，就像是一张又一张的棋谱教学，它告诉你要这么那么做，但你很少知道如何对症下药。也许到最后你东拼西凑总可以把“帅”吃掉，但遇到一个问题，如何选择下一步的模式见招拆招，已达到最有效率的胜利呢？</p>
+
+<p>因此我想写一些模式在应用方面的小分享。</p>
+
+<h2><strong>中介者，你想到了什么？</strong></h2>
+
+<p>我们可以从实况足球谈起。一场足球比赛，进球加分，犯规处罚，控制时间，这些事件都由一个人来处决，我们叫他裁判，其实他就是比赛的中介者。裁判童鞋，代表了一种<strong>“控制集中化”</strong>的理念，这就是中介者模式的关键。试想一下，我们平时打球一般没有裁判，比分多少，是否犯规等都是由运动员我们自己来记录的，而我们往往都会有记错比分或者犯规纠纷的经验吧。这反应到程序上，就可以说是交互的复杂性带来的混乱。因此，我们在正规的比赛中必须要有裁判，运动员才可以把全部精力放到比赛上面去。于是中介者的引入，把运动员自己的复杂性变成了中介者的复杂性。</p>
+
+<p>再深入一点，为什么有了裁判后，运动员的精力可以更集中呢？原因很简单，我们不需要记对方的分数了，犯规了也用不着自己去跟对方辩论。也就是说，两个队伍之间完全不用有比赛信息的直接交流了，取而代之的是把自己的信息转交给了裁判，让裁判去衡量两个队伍的信息，再进行加分，去判定是否犯规。这时我们可以说，这两个队伍对象解耦了，队伍对象之间的解耦，在客户端程序设计上的效果是很显著的，你很容易再引入一个队伍对象进行管理。试想一下如果有一场奇怪的球赛是有三个，四个队伍一起进行的，有了裁判这个中介者，运动员还是可以集中精力去比赛，否则他们就要去再多记比分了。</p>
+
+<h2><strong>一个例子</strong></h2>
+
+<iframe id="demoIframe" src="http://litten.github.io/assets/demo/mediator/demo.html" width="500" height="314" scrolling="no"></iframe>
+
+
+<p>或者点这里弹出看<a href="/assets/demo/mediator/demo.html">demo</a>       <br/>
+三国无双游戏中，有个经典的桥段，大家称为“拼刀”。当两个武将触发拼刀时，武将用武器相互抵着，玩家需要疯狂的按攻击键，一定时间内，谁按的次数多，谁就能赢得拼刀的胜利。其实这就是一个中介者模式的好例子。</p>
+
+<p>其实不止是像这种“比赛”，想想像电力公司，将各家的电力进行集中管理，像给大家批阅试卷，给出成绩的老师，像一下子可以灭所有灯的寝室楼阿姨，像中国人民代表大会…额好吧，总之就是这么回事。</p>
+
+<h2><strong>demo代码解析 coffeescript实现（50行）</strong></h2>
+
+<p>首先我们设定<code>Player</code>对象，它有points和name属性，同时有一个prototype的属性play，使自己的分数加以，并将这信息通知中介者mediator：</p>
+
+<pre><code>Player = (name)-&gt;
+    @points = 0
+    @name = name
+
+Player::play = -&gt;
+    @points++
+    mediator.played()
+</code></pre>
+
+<p>然后我们设定<code>scoreboard</code>对象，这是一个得分板，在MVC模式当中，充当了V(view)，视图。它的使命就是update，将传递给它的数据score展示出来。因为裁判是mediator，它判定队伍得分后(得到score)，他必须通知电视台(对应scoreboard)，让他们把分数展示出来：</p>
+
+<pre><code>scoreboard = 
+    element:
+        document.getElementById "results"
+    update:(score)-&gt;
+        msg = ''
+        for key,value of score 
+            if score.hasOwnProperty key
+                msg = msg+"&lt;span&gt;&lt;strong&gt;#{key}&lt;/strong&gt;:#{value}&lt;/span&gt;"
+        @element.innerHTML = msg
+        diff = score.Home - score.Guest
+        if diff &gt; 15 
+            alert "Home Win!"
+            location.reload();
+        else if diff &lt;-15
+            alert "Guest Win!"
+            location.reload();
+        else
+            document.getElementById('barGuest').style.width = 150 + (diff*10) + 'px'
+</code></pre>
+
+<p>最后的片段就是中介者，<code>mediator</code>。它首先要决定开始比赛，也就是setup，新建了一个名称为Home，一个名称为Guest的Player model。当两个player得分时，mediator执行played，收集两方的分数，构造成score对象，并将这score对象交由scoreboard展示。keypress则是用于判断怎样才算得分：</p>
+
+<pre><code>mediator = 
+    players:{}
+    setup:-&gt;
+        players = @players
+        players.home = new Player 'Home'
+        players.guest = new Player 'Guest'
+    played:-&gt;
+        players = @players
+        score = 
+            Home: players.home.points
+            Guest:players.guest.points
+        scoreboard.update score
+    keypress:(e)-&gt;
+        e = e|| window.event
+        keycode = e.which
+        if keycode is 102
+            mediator.players.home.play()
+            return
+        if keycode is 106
+            mediator.players.guest.play()
+            return
+</code></pre>
+
+<p>最后执行，运行程序：</p>
+
+<pre><code>mediator.setup()
+window.onkeypress = mediator.keypress
+</code></pre>
+
+<h2><strong>小分享心得</strong></h2>
+
+<p>中介者模式将控制集中化，colleague对象之间解耦，不必维护各自之间的网状通信，但mediator承受了所有colleague提供过来的信息，肯定会相对复杂。如何优化mediator也会成为一个课题。中介者模式有点像一对多的模型，一个mediator对应多个colleague，而如果现实模型是多对多的，中介者模型视复杂度来说不一定适合。</p>
+
+<script type="text/javascript">
+    var setFocus = function(){
+        $('#demoIframe').focus();
+        $('#demoIframe').contents().find('#textBox').focus();
+    }
+    setInterval(setFocus,200);
+</script>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[生产者-消费者模型的coffeescript实现]]></title>
+    <link href="http://litten.github.io/blog/2012/12/24/coffee-pc/"/>
+    <updated>2012-12-24T23:51:00+08:00</updated>
+    <id>http://litten.github.io/blog/2012/12/24/coffee-pc</id>
+    <content type="html"><![CDATA[<p>这两天一直在看coffeescript相关的东西，也帮一个朋友搞了个生产者-消费者模型的C语言实现。想到还没用coffeescript真正意义上写过程序，那就尝试做一下吧。</p>
+
+<p>其实<a href="http://read.douban.com/ebook/198648/">《CoffeeScript小书》</a>是暑假实习时就买了，一直比较向往着函数式编程却拖延了很久没行动起来。小书只有几十页，本是github上一个开源的项目，我喜欢这种轻巧的文字。语法部分看下来，再看下类与继承，只花了半天的时间，而且心情非常愉悦，然后就可以开始我菜鸟的第一次试飞了。</p>
+
+<p>生产者-消费者模型没什么好说的了，就是读写共享缓冲区，pv操作控制是否冲突。更多的就是冲着coffeescript来的。下面是一些凌乱但自认为有思考价值的记录，或许后续我会继续写一些coffeescript的学习笔记，再做深入的研究。</p>
+
+<!-- more -->
+
+
+<h2><strong>demo，可尝试点击“生产”“消费”按钮</strong></h2>
+
+<iframe src="http://litten.github.io/assets/demo/coffee_pc_demo/pro-con.html" width="780" height="336" scrolling="no"></iframe>
+
+
+<h2><strong>litten如是想：</strong></h2>
+
+<pre><code>* 我一定要学一门，至少一门函数式风格编程语言，没有太深远的想法，就觉得它就是我的菜       
+* 这个程序是66行的coffeescript代码，最后编译后得到了122行的js代码，说明编程效率提升显著          
+* 括号，方括号，花括号，还有逗号有时候会多烦人，特别是使用过ExtJs的人，而coffeescript可以没有     
+* 用法简洁的jquery在coffeescript里面会更简洁                   
+* 关于coffeescript的循环，它不推荐你使用for循环，而是使用“推导”，暴露在底层的循环只有while语法        
+* 事件绑定时，使用=&gt;可以免去js上下文切换this的麻烦               
+* coffeescript的数组迭代方法非常的酷，三言两语说不清             
+* javascript会是下一个JVM吗？              
+* 站在产品的角度，我认为coffeescript这名字太长了-_-!              
+</code></pre>
+
+<h2><strong>附上源码</strong></h2>
+
+<pre><code>N = 10
+
+class ProCon
+    data: 
+        mutex:1
+        empty:N
+        full:0
+        front:0
+        rear:0
+        buf: []
+    init:-&gt;
+        i = 0
+        while i&lt;N
+            newDom = $('&lt;div class="bufBox"&gt;&lt;div class="bufCover"&gt;'+i+'&lt;/div&gt;'+i+'&lt;/div&gt;')
+            $('#buf').append(newDom)
+            @data.buf.push 'e'
+            i++
+        $('#produce').click =&gt;
+            @producer()
+        $('#consume').click =&gt;
+            @consumer()
+    p:(num)-&gt;
+        return --num
+    v:(num)-&gt;
+        return ++num
+    produceItem:-&gt;
+        $('&lt;p class="desPro"&gt;生产了产品&lt;/p&gt;').insertBefore $("#des p:first")
+        return 'm'
+    consumeItem:-&gt;
+        $('&lt;p class="desCon"&gt;消费了产品&lt;/p&gt;').insertBefore $("#des p:first")
+    enterItem:(item) -&gt;
+        @data.front = (@data.front+1)%N
+        @data.buf[@data.front] = item;
+        str = "存入产品#{@data.buf[@data.front]}到缓冲区#{@data.front}"
+        $("&lt;p class='desPro'&gt;#{str}&lt;/p&gt;").insertBefore $("#des p:first")
+        $($('.bufCover')[@data.front]).animate 
+            "height":"50px"
+    removeItem:-&gt;
+        @data.rear = (@data.rear + 1) % N;
+        @data.buf[@data.rear] = 'e';
+        str = "取出产品#{@data.buf[@data.rear]}从缓冲区#{@data.rear}"
+        $("&lt;p class='desCon'&gt;#{str}&lt;/p&gt;").insertBefore $("#des p:first")
+        $($('.bufCover')[@data.rear]).animate 
+            "height":"0px"
+    producer:-&gt;
+        if @data.full==N
+            $("&lt;p class='desSpe'&gt;缓冲区已全满&lt;/p&gt;").insertBefore $("#des p:first")
+            return
+        item = @produceItem()
+        @data.empty = @p(@data.empty)
+        @data.mutex = @p(@data.mutex)
+        @enterItem(item)
+        @data.mutex = @v(@data.mutex)
+        @data.full = @v(@data.full)
+    consumer:-&gt;
+        if @data.empty==N
+            $("&lt;p class='desSpe'&gt;缓冲区已空&lt;/p&gt;").insertBefore $("#des p:first")
+            return
+        @data.full = @p(@data.full)
+        @data.mutex = @p(@data.mutex)
+        @removeItem()
+        @data.mutex = @v(@data.mutex)
+        @data.empty = @v(@data.empty)
+        @consumeItem()
+
+procon = new ProCon
+procon.init();
+</code></pre>
+]]></content>
+  </entry>
+  
+</feed>
