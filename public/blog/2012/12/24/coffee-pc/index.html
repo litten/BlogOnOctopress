@@ -1,0 +1,227 @@
+
+<!DOCTYPE HTML>
+
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<title>生产者-消费者模型的coffeescript实现 - Litten's Blog</title>
+	<meta name="author" content="Litten">
+
+	
+	<meta name="description" content="生产者-消费者模型的coffeescript实现 这两天一直在看coffeescript相关的东西，也帮一个朋友搞了个生产者-消费者模型的C语言实现。想到还没用coffeescript真正意义上写过程序，那就尝试做一下吧。 其实《CoffeeScript小书》是暑假实习时就买了， &hellip;">
+	
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+	<link href="http://feed.feedsky.com/litten" rel="alternate" title="Litten's Blog" type="application/atom+xml">
+	
+	<link rel="canonical" href="http://litten.github.com/blog/2012/12/24/coffee-pc/">
+	<link href="/favicon.png" rel="shortcut icon">
+	<link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+	<link href="/stylesheets/font-awesome.min.css" media="screen, projection" rel="stylesheet" type="text/css">
+	<!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+	<link href='http://fonts.googleapis.com/css?family=Open+Sans:400italic,400,700' rel='stylesheet' type='text/css'>
+	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+	
+  
+
+</head>
+
+
+<body>
+	<div class="container">
+		<div class="left-col">
+			<div class="intrude-less">
+			<header id="header" class="inner"><div class="profilepic">
+	<script src="/javascripts/md5.js"></script>
+	<script type="text/javascript">
+		$(function(){
+			$('.profilepic').append("<img src='/images/social/litten.png' alt='Profile Picture' style='width: 160px;' />");
+		});
+	</script>
+</div>
+
+<hgroup>
+  <h1><a href="/">Litten</a></h1>
+</hgroup>
+<p class="subtitle">Simple and clear</p>
+<nav id="main-nav"><ul class="nav">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+</ul>
+
+</nav>
+<nav id="sub-nav">
+	<div class="social">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<a class="weibo" target="_blank" href="http://weibo.com/litten225" title="weibo">新浪微博</a>
+		
+		
+		<a class="rss" target="_blank" href="http://feed.feedsky.com/litten" title="RSS">RSS</a>
+		
+	</div>
+</nav>
+</header>				
+			</div>
+		</div>	
+		<div class="mid-col">
+			
+				
+			
+			<div class="mid-col-container">
+				<div id="content" class="inner"><article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+	<h1 class="title" itemprop="name">生产者-消费者模型的coffeescript实现</h1>
+	<div class="entry-content" itemprop="articleBody"><p>这两天一直在看coffeescript相关的东西，也帮一个朋友搞了个生产者-消费者模型的C语言实现。想到还没用coffeescript真正意义上写过程序，那就尝试做一下吧。</p>
+
+<p>其实<a href="http://read.douban.com/ebook/198648/">《CoffeeScript小书》</a>是暑假实习时就买了，一直比较向往着函数式编程却拖延了很久没行动起来。小书只有几十页，本是github上一个开源的项目，我喜欢这种轻巧的文字。语法部分看下来，再看下类与继承，只花了半天的时间，而且心情非常愉悦，然后就可以开始我菜鸟的第一次试飞了。</p>
+
+<p>生产者-消费者模型没什么好说的了，就是读写共享缓冲区，pv操作控制是否冲突。更多的就是冲着coffeescript来的。下面是一些凌乱但自认为有思考价值的记录，或许后续我会继续写一些coffeescript的学习笔记，再做深入的研究。</p>
+
+<!-- more -->
+
+
+<h2><strong>demo，可尝试点击“生产”“消费”按钮</strong></h2>
+
+<iframe src="/assets/demo/coffee_pc_demo/pro-con.html" width="780" height="336" scrolling="no"></iframe>
+
+
+<h2><strong>litten如是想：</strong></h2>
+
+<pre><code>* 我一定要学一门，至少一门函数式风格编程语言，没有太深远的想法，就觉得它就是我的菜       
+* 这个程序是66行的coffeescript代码，最后编译后得到了122行的js代码，说明编程效率提升显著          
+* 括号，方括号，花括号，还有逗号有时候会多烦人，特别是使用过ExtJs的人，而coffeescript可以没有     
+* 用法简洁的jquery在coffeescript里面会更简洁                   
+* 关于coffeescript的循环，它不推荐你使用for循环，而是使用“推导”，暴露在底层的循环只有while语法        
+* 事件绑定时，使用=&gt;可以免去js上下文切换this的麻烦               
+* coffeescript的数组迭代方法非常的酷，三言两语说不清             
+* javascript会是下一个JVM吗？              
+* 站在产品的角度，我认为coffeescript这名字太长了-_-!              
+</code></pre>
+
+<h2><strong>附上源码</strong></h2>
+
+<pre><code>N = 10
+
+class ProCon
+    data: 
+        mutex:1
+        empty:N
+        full:0
+        front:0
+        rear:0
+        buf: []
+    init:-&gt;
+        i = 0
+        while i&lt;N
+            newDom = $('&lt;div class="bufBox"&gt;&lt;div class="bufCover"&gt;'+i+'&lt;/div&gt;'+i+'&lt;/div&gt;')
+            $('#buf').append(newDom)
+            @data.buf.push 'e'
+            i++
+        $('#produce').click =&gt;
+            @producer()
+        $('#consume').click =&gt;
+            @consumer()
+    p:(num)-&gt;
+        return --num
+    v:(num)-&gt;
+        return ++num
+    produceItem:-&gt;
+        $('&lt;p class="desPro"&gt;生产了产品&lt;/p&gt;').insertBefore $("#des p:first")
+        return 'm'
+    consumeItem:-&gt;
+        $('&lt;p class="desCon"&gt;消费了产品&lt;/p&gt;').insertBefore $("#des p:first")
+    enterItem:(item) -&gt;
+        @data.front = (@data.front+1)%N
+        @data.buf[@data.front] = item;
+        str = "存入产品#{@data.buf[@data.front]}到缓冲区#{@data.front}"
+        $("&lt;p class='desPro'&gt;#{str}&lt;/p&gt;").insertBefore $("#des p:first")
+        $($('.bufCover')[@data.front]).animate 
+            "height":"50px"
+    removeItem:-&gt;
+        @data.rear = (@data.rear + 1) % N;
+        @data.buf[@data.rear] = 'e';
+        str = "取出产品#{@data.buf[@data.rear]}从缓冲区#{@data.rear}"
+        $("&lt;p class='desCon'&gt;#{str}&lt;/p&gt;").insertBefore $("#des p:first")
+        $($('.bufCover')[@data.rear]).animate 
+            "height":"0px"
+    producer:-&gt;
+        if @data.full==N
+            $("&lt;p class='desSpe'&gt;缓冲区已全满&lt;/p&gt;").insertBefore $("#des p:first")
+            return
+        item = @produceItem()
+        @data.empty = @p(@data.empty)
+        @data.mutex = @p(@data.mutex)
+        @enterItem(item)
+        @data.mutex = @v(@data.mutex)
+        @data.full = @v(@data.full)
+    consumer:-&gt;
+        if @data.empty==N
+            $("&lt;p class='desSpe'&gt;缓冲区已空&lt;/p&gt;").insertBefore $("#des p:first")
+            return
+        @data.full = @p(@data.full)
+        @data.mutex = @p(@data.mutex)
+        @removeItem()
+        @data.mutex = @v(@data.mutex)
+        @data.empty = @v(@data.empty)
+        @consumeItem()
+
+procon = new ProCon
+procon.init();
+</code></pre>
+</div>
+
+</article>
+
+	<div class="share">
+	<div class="jiathis_style" style="float:right;">
+	    <a class="jiathis_button_tsina" title="分享到新浪微博"><span class="jiathis_txt jtico jtico_tsina"></span></a>
+	    <a class="jiathis_button_tqq" title="分享到腾讯微博"><span class="jiathis_txt jtico jtico_tqq"></span></a>
+	    <a class="jiathis_button_renren" title="分享到人人网"><span class="jiathis_txt jtico jtico_renren"></span></a>
+	    <a class="jiathis_button_qzone" title="分享到QQ空间"><span class="jiathis_txt jtico jtico_qzone"></span></a>
+	    <a class="jiathis_button_douban" title="分享到豆瓣"><span class="jiathis_txt jtico jtico_douban"></span></a>
+	    <a class="jiathis_button_weixin" title="分享到微信"><span class="jiathis_txt jtico jtico_weixin"></span></a>
+	</div>
+	<!-- JiaThis Button BEGIN -->
+	<script type="text/javascript" src="http://v3.jiathis.com/code/jia.js?uid=1373344788098833" charset="utf-8"></script>
+</div>
+
+<div id="uyan_frame"></div>
+<script type="text/javascript" src="http://v2.uyan.cc/code/uyan.js"></script>
+</div>
+			</div>
+			<footer id="footer" class="inner"><hr>
+<p>
+  Copyright &copy; 2013 - Litten -
+  <!-- <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span> -->
+</p>
+</footer>
+			
+
+
+
+
+
+
+
+
+
+
+
+		</div>
+	</div>
+</body>
+</html>

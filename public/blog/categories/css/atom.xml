@@ -1,0 +1,489 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: css | Litten's Blog]]></title>
+  <link href="http://litten.github.com/blog/categories/css/atom.xml" rel="self"/>
+  <link href="http://litten.github.com/"/>
+  <updated>2013-09-21T20:50:30+08:00</updated>
+  <id>http://litten.github.com/</id>
+  <author>
+    <name><![CDATA[Litten]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[有趣的css面试小题目——九宫格(二)]]></title>
+    <link href="http://litten.github.com/blog/2012/12/21/css-jiugongge2/"/>
+    <updated>2012-12-21T13:54:00+08:00</updated>
+    <id>http://litten.github.com/blog/2012/12/21/css-jiugongge2</id>
+    <content type="html"><![CDATA[<p>书接上回，<a href="http://litten.github.com/blog/blog/2012/12/14/css-jiugongge/">上回在这</a>。</p>
+
+<pre><code>9个元素，每个50*50px，排成九宫格
+默认是border颜色为blue，hover到格子上变成red（兼容到IE6）
+</code></pre>
+
+<p><img src="/assets/blogImg/jiugongge1.jpg" alt="css题目" /></p>
+
+<p>题目的关键是解决“公用边”，上次我主要做了两个方面的尝试：</p>
+
+<pre><code>* 用负margin使元素的border叠加
+* 用table的border-collapse实现边框合并
+</code></pre>
+
+<p>这一次的思路则更加简明，也是个人认为是更好的方法。感谢<a href="http://weibo.com/u/1666828424">队长</a>提供的思路。</p>
+
+<!-- more -->
+
+
+<h2><strong>能不能不用border？</strong></h2>
+
+<p><img src="/assets/blogImg/jiugongge10.jpg" alt="一个格子的透视图，a其实充当了div的“边框”" />    <br/>
+如果不用border，怎么实现hover后，格子四周变红呢？那肯定是两个dom嵌套在一起，一大一小，小的dom作为“格子”，大的dom作为格子的红色“边框”。先看我初始化的一个格子设定：       <br/>
+html：</p>
+
+<pre><code>&lt;div id="test"&gt;
+    &lt;a href="#"&gt;&lt;div&gt;1&lt;/div&gt;&lt;/a&gt;
+&lt;/div&gt;
+</code></pre>
+
+<p>初始css:</p>
+
+<pre><code>#test div{
+    width: 50px;
+    line-height: 50px;
+    text-align:center;
+    background: #AAA;
+}
+#test a{
+    width: 55px;
+    line-height: 55px;
+    float: left;
+}
+#test a:hover{
+    background: red;
+}
+</code></pre>
+
+<p>由于a标签设置了宽度为55px，div标签设置了宽度为50px，这时候格子hover看起来只露出了<strong>右边</strong>的5px红色部分。</p>
+
+<p>接下来，div添加属性<code>margin-top:5px;margin-right:5px</code>，这时可以显示<strong>上部</strong>的5px边框。再接着，在div的容器，也就是a标签设置<code>padding-left:5px;padding-bottom:5px;</code>，使格子<strong>左边框</strong>和<strong>下边框</strong>都显示出来。</p>
+
+<p><img src="/assets/blogImg/jiugongge8.jpg" alt="完成一个格子的设置步骤" /></p>
+
+<p>那么为什么要将a标签设置为55px，再进行一系列关于margin和padding的设置呢，原因我们最后再说。</p>
+
+<p>因此修改后的css为：</p>
+
+<pre><code>#test div{
+    width: 50px;
+    line-height: 50px;
+    text-align:center;
+    background: #AAA;
+    margin-right:5px;
+    margin-top:5px;
+}
+#test a{
+    width: 55px;
+    line-height: 55px;
+    float: left;
+    margin-right: -5px;
+    margin-bottom: -5px;
+}
+#test a:hover{
+    background: red;
+}
+</code></pre>
+
+<h2><strong>九个格子会怎样？</strong></h2>
+
+<p>将a标签左浮动，同时添加到九个格子，这时候的效果是：两个格子之间会有10px的距离。</p>
+
+<p>为解决“公用边”问题，在a标签添加负值的margin：<code>margin-right:-5px;margin-bottom:-5px;</code>。最后将最外层的容器#test的宽度和高度设置为170px(50<em>3+5</em>4)，背景设置为蓝色。这时候大功告成了。</p>
+
+<p><img src="/assets/blogImg/jiugongge9.jpg" alt="完成九个格子的设置步骤" /></p>
+
+<p>最终的代码是：     <br/>
+html：</p>
+
+<pre><code>&lt;div id="test"&gt;
+    &lt;a href=""&gt;&lt;div&gt;1&lt;/div&gt;&lt;/a&gt;
+    &lt;a href=""&gt;&lt;div&gt;2&lt;/div&gt;&lt;/a&gt;
+    &lt;a href=""&gt;&lt;div&gt;3&lt;/div&gt;&lt;/a&gt;
+    &lt;a href=""&gt;&lt;div&gt;4&lt;/div&gt;&lt;/a&gt;
+    &lt;a href=""&gt;&lt;div&gt;5&lt;/div&gt;&lt;/a&gt;
+    &lt;a href=""&gt;&lt;div&gt;6&lt;/div&gt;&lt;/a&gt;
+    &lt;a href=""&gt;&lt;div&gt;7&lt;/div&gt;&lt;/a&gt;
+    &lt;a href=""&gt;&lt;div&gt;8&lt;/div&gt;&lt;/a&gt;
+    &lt;a href=""&gt;&lt;div&gt;9&lt;/div&gt;&lt;/a&gt;
+&lt;/div&gt;
+</code></pre>
+
+<p>css：</p>
+
+<pre><code>#test{
+    width: 170px;
+    height:170px;
+    background: blue;
+    margin: 0 auto;
+}
+#test div{
+    width: 50px;
+    line-height: 50px;
+    text-align:center;
+    background: #AAA;
+    margin-right:5px;/*这句不要也可以*/
+    margin-top:5px;
+}
+#test a{
+    width: 55px;
+    line-height: 55px;
+    float: left;
+    text-decoration: none;
+    padding-left: 5px;
+    padding-bottom: 5px;
+    margin-right: -5px;
+    margin-bottom: -5px;
+}
+#test a:hover{
+    background: red;
+}
+</code></pre>
+
+<h2><strong>巧妙在哪里？</strong></h2>
+
+<ul>
+<li>a标签hover前不设置背景色，露出最外层#test的蓝色背景，看起来格子有蓝色的边框；a标签hover时背景色设置为红色，充当了格子的红色边框；</li>
+<li>a标签设置为55px是最关键的一点。按照此思路和题目要求，格子是50px大小，边框的dom应该是60px大小。而此时a设置为55px，因为a要设置<code>padding-left:5px;padding-bottom:5px;</code>，刚好a就有60px大小了；而a里面的div要设置<code>margin-top:5px;margin-right:5px</code>（其实margin-right也可以不加）,这时候margin和padding就达到了一个“中和”的效果，使布局不发生偏差。</li>
+</ul>
+
+
+<p>点此看<a href="/assets/demo/jiugongge_demo2.html">demo</a>。</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[分享一个IE6，7的CSS hack bug]]></title>
+    <link href="http://litten.github.com/blog/2012/12/17/share-a-css-hack/"/>
+    <updated>2012-12-17T19:43:00+08:00</updated>
+    <id>http://litten.github.com/blog/2012/12/17/share-a-css-hack</id>
+    <content type="html"><![CDATA[<h3>一、分享一个IE6，7的css hack bug。</h3>
+
+<p><img src="/assets/blogImg/css_hack.jpg" alt="css hack" /></p>
+
+<blockquote><p>IE和我们之间，肯定有一个是傻逼，如果它不是，那我们准是。不然很多事情没法解释…  ——多么痛的领悟</p></blockquote>
+
+<!-- more -->
+
+
+<p>先看代码，或者点击看<a href="/assets/demo/hack_demo.html">demo</a>       <br/>
+html:</p>
+
+<pre><code>&lt;div id="main"&gt;
+    &lt;div class="box"&gt;&lt;/div&gt;
+    &lt;div class="box"&gt;&lt;/div&gt;
+&lt;/div&gt; 
+</code></pre>
+
+<p>css:</p>
+
+<pre><code>#main{
+    width: 200px;
+    height: 50px;
+    border: 1px solid #000;
+    margin: 0 auto;
+}
+#main .box{
+    width: 50px;
+    height: 50px;
+    margin-left: 10px;
+    position: relative;
+    float: left;
+    background: #333;
+}
+#main .box:hover{
+    z-index: 999;
+    /*background: #333;*/
+    /*background: #999;*/
+}
+</code></pre>
+
+<p>.box设置了的四行核心代码是：        <br/>
+* <code>float:left</code> &ndash; 左浮动       <br/>
+* <code>margin-left: 10px</code> &ndash; 左外边距为10px          <br/>
+* <code>position: relative</code> &ndash; 因为在box里面想用一个dom做绝对定位          <br/>
+* <code>background: #333</code> &ndash; 设置background颜色为#333       <br/>
+当.box触发hover时，做了一步z-index的改变，这时候在IE6，7中出现bug：因margin-left失效，.box会向左移动10px；而且这时候设置margin-left是不起作用的，hover结束后.box也不会回到原来的位置。</p>
+
+<h3>二、淡定解决异次元的bug</h3>
+
+<p>诡异的事情最后水落石出：<strong>background属性居然影响了margin</strong>。</p>
+
+<p>将.box:hover多加一行background属性，比如：<code>background: #999</code>，这样子在IE上“看上去”就解决了。  <br/>
+<strong>但是</strong>，就当你以为解决了bug的时候，如果.box:hover的background颜色设置与hover之前的颜色一样，也就是设置为<code>background: #333</code>，阴魂不散的bug又会重新出现啦。</p>
+
+<p>庆幸你的需求是background颜色不一样吧。如果还真是悲剧到要做成一样的颜色，解决的办法恐怕只能是取消.box的<code>position: relative</code>，然后多加一层dom容器了。</p>
+
+<pre><code>&lt;div class="box"&gt;
+    &lt;div style="position: relative"&gt;…&lt;/div&gt;
+    …
+&lt;/div&gt;
+</code></pre>
+
+<p>友情link：<a href="http://xueran.github.com/blog/2012/12/17/csstest-jiugongge/">xueran的这篇文字</a>。</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[有趣的css面试小题目——九宫格(一)]]></title>
+    <link href="http://litten.github.com/blog/2012/12/14/css-jiugongge/"/>
+    <updated>2012-12-14T19:15:00+08:00</updated>
+    <id>http://litten.github.com/blog/2012/12/14/css-jiugongge</id>
+    <content type="html"><![CDATA[<p>前段时间，我的 leader Henry在群里面分享了一道<a href="http://www.etao.com/">一淘</a>的面试题。         题目非常的有趣，忙完前阵的工作之后突然记起，也尝试做了一下。</p>
+
+<pre><code>9个元素，每个50*50px，排成九宫格
+默认是border颜色为blue，hover到格子上变成red（兼容到IE6）
+</code></pre>
+
+<p><img src="/assets/blogImg/jiugongge1.jpg" alt="css题目" /></p>
+
+<!--more-->
+
+
+<p>做成九宫格大家都会，但题目的陷阱就在hover上。鼠标hover到格子4，格子5时，其实他们“共用”了一条边。由于是纯css实现的，我们不可能说用js去动态改变dom，因此怎样实现“公用边”就成为了难点。</p>
+
+<p><strong>尝试的过程：</strong></p>
+
+<pre><code>* 我的第一个想法，用“叠加”的方式实现“公用边”；        
+* 后来的想法，用table的border-collapse实现“公用边”；          
+* 在table想法的基础上改进；
+* 一种更简便的做法，不需要border，见九宫格(二)                       
+</code></pre>
+
+<h2><strong>我的第一个想法</strong></h2>
+
+<p>先做做看，尝试永远是第一步。我将9个div都设置了5px的border，排成了九宫格，添加了hover，这时候初始的效果是：   <br/>
+<img src="/assets/blogImg/jiugongge2.jpg" alt="初始效果" />    <br/>
+这样其实格子之间的距离是两倍border（10px）。需要再将中间的一竖（2，5，8）设置<code>margin-left:-5px;margin-right:-5px;</code>,再将中间的一横（3，4，5）设置<code>margin-top:-5px;margin-bottom:-5px;</code>，这样等于是强制把格子间的距离“拉”到5px。      <br/>
+<img src="/assets/blogImg/jiugongge3.jpg" alt="把格子间的距离“拉”到5px" /><br/>
+到这一步，简单的九宫格是完成了，但hover之后会发现，格子的边会被挡住（格子5的下边和右边分别被格子8和格子6挡住）。因为这里“公用边”的思路准确来说是“重合边”，是用负值的margin强制定位的。而我的解决方式是hover时添加<code>z-index:999</code>，让hover到的格子在最上层显示而不会被挡住。同时，不要忘记在9个div的css里面添加一句让z-index生效的<code>position: relative;</code>，具体原因看<a href="http://www.csser.com/question/4f4332dedbc7b0ac4c00034e">这里</a>。</p>
+
+<p>代码君：         <br/>
+1.html：</p>
+
+<pre><code>&lt;div id="test0"&gt;
+    &lt;div&gt;1&lt;/div&gt;
+    &lt;div class="lr_indent"&gt;2&lt;/div&gt;
+    &lt;div&gt;3&lt;/div&gt;
+    &lt;div class="tb_indent"&gt;4&lt;/div&gt;
+    &lt;div class="lr_indent tb_indent"&gt;5&lt;/div&gt;
+    &lt;div class="tb_indent"&gt;6&lt;/div&gt;
+    &lt;div&gt;7&lt;/div&gt;
+    &lt;div class="lr_indent"&gt;8&lt;/div&gt;
+    &lt;div&gt;9&lt;/div&gt;
+&lt;/div&gt;
+</code></pre>
+
+<p>2.css:</p>
+
+<pre><code>#test0{
+    margin: 30px;
+    width: 200px;
+    height: 200px;
+}
+#test0 div{
+    width: 50px;
+    height: 50px;
+    float: left;
+    background: #eee;
+    border: 5px solid #00f;
+    text-align: center;
+    line-height: 50px;
+    color: #090;
+    position: relative;
+}
+#test0 .lr_indent{
+    margin-left: -5px;
+    margin-right: -5px;
+}
+#test0 .tb_indent{
+    margin-top: -5px;
+    margin-bottom: -5px;
+}
+#test0 div:hover{
+    border: 5px solid #f00;
+    z-index: 999;
+    background: #eee;/*必须加这一句，在IE6，7有bug*/
+}
+</code></pre>
+
+<p><code>思考</code>：这样的方式好吗？不够好。</p>
+
+<pre><code>* 这才是9宫格，如果是16，25，…，81个格子，设置margin缩进的人力代价是很高的。              
+* 兼容性，在IE6，7下，负值margin在hover时候有bug。
+</code></pre>
+
+<p><img src="/assets/blogImg/jiugongge4.jpg" alt="ie6，7下，hover时负值margin-left不起效" /></p>
+
+<h2><strong>后来的想法</strong></h2>
+
+<p>经过第一次尝试，我得到一个经验：<code>要用一种通用的方法去解决“公用边”</code>，而不是分别设置.lr_indent和.tb_indent。
+随即我想到了表格。作为table，它有个很突出的属性，就是合并border，css里面的设置为<code>border-collapse:collapse;</code>。ok，这就是key point。</p>
+
+<p>按照这个思路，我简单的编写了代码，一开始我把hover定位到td上面去，发现hover时也会出现第一个想法中“挡住”的情况。而且，去将td的position改变，再添加z-index的方法是不可能有用的(z-index不会起效)。</p>
+
+<p>我的方法是在td中包含一个span，把hover定位到span中去，td设置为<code>position:relative;</code>，span设置为<code>position:absolute;</code>，这时候的hover就可以设置让span的border不被挡住展示了。      <br/>
+代码君又来了：      <br/>
+html：</p>
+
+<pre><code>&lt;div id="test1"&gt;
+    &lt;table&gt;
+        &lt;tr&gt;
+            &lt;td&gt;&lt;span&gt;1&lt;/span&gt;&lt;/td&gt;
+            &lt;td&gt;&lt;span&gt;2&lt;/span&gt;&lt;/td&gt;
+            &lt;td&gt;&lt;span&gt;3&lt;/span&gt;&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+            &lt;td&gt;&lt;span&gt;4&lt;/span&gt;&lt;/td&gt;
+            &lt;td&gt;&lt;span&gt;5&lt;/span&gt;&lt;/td&gt;
+            &lt;td&gt;&lt;span&gt;6&lt;/span&gt;&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+            &lt;td&gt;&lt;span&gt;7&lt;/span&gt;&lt;/td&gt;
+            &lt;td&gt;&lt;span&gt;8&lt;/span&gt;&lt;/td&gt;
+            &lt;td&gt;&lt;span&gt;9&lt;/span&gt;&lt;/td&gt;
+        &lt;/tr&gt;
+    &lt;/table&gt;
+&lt;/div&gt;
+</code></pre>
+
+<p>css：</p>
+
+<pre><code>*{
+    margin:0;
+    padding: 0;
+}
+table{
+    border-collapse: collapse;
+}
+#test1 td{
+    width: 50px;
+    height: 50px;
+    background: #eee;
+    position: relative;
+    border: 5px solid #00f;
+    text-align: center;
+}
+#test1 td span{
+    color: #090;
+    display:block;
+    width: 50px;
+    height: 50px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    line-height: 50px;
+}
+#test1 td span:hover{
+    border: 5px solid #f00;
+    margin-top:-5px;
+    margin-left: -5px;
+}
+</code></pre>
+
+<p>别忘了span在hover时，必须设置一个负的<code>margein-top</code>和<code>margein-left</code>，以保证红色边框恰好定位在格子四周。见css君最后的片段。假如不设置，你看到的将是这样：  <br/>
+<img src="/assets/blogImg/jiugongge5.jpg" alt="未设置span:hover的margin" />    <br/>
+本以为已经大功告成了，在IE中测试却让我傻了眼：   <br/>
+<img src="/assets/blogImg/jiugongge6.jpg" alt="IE7下的情景" />  <br/>
+（ps：作为前端一枚，我已经做好了妥妥的心理准备，但此情此景还是让人喷出一口老血……）</p>
+
+<h2><strong>改进，改进</strong></h2>
+
+<p>说实话，table和div之争这么多年，大家都在页面中用越来越多的div，而越发的鄙视table，反而对table的熟悉程度反应了前端们的基础是否扎实。吃一堑长一智，这句话特别适用于在table中翻江倒海的亲们。</p>
+
+<p>改进！</p>
+
+<p>首先这个bug（也无所谓是不是bug，算是浏览器的差异性吧）我知道，在table的td里面设置了<code>position:relative;</code>就会在IE中出现这样的情况。注意是所有的IE哦，包括IE10。而根据第二个思路，最后的hover定位的元素为span，它本身设定为<code>position:absolute;</code>它的父级元素必须得设置<code>position:relative;</code>才能完成题目功能，这是毋庸置疑的。</p>
+
+<p>既然现在span的父级td不能设置<code>position:relative;</code>，我就在它们之间添加一个div，用来做span的容器。</p>
+
+<p>代码君再一次来了：      <br/>
+html:</p>
+
+<pre><code>&lt;div id="test2"&gt;
+    &lt;table&gt;
+        &lt;tr&gt;
+            &lt;td&gt;&lt;div&gt;&lt;span&gt;1&lt;/span&gt;&lt;/div&gt;&lt;/td&gt;
+            &lt;td&gt;&lt;div&gt;&lt;span&gt;2&lt;/span&gt;&lt;/div&gt;&lt;/td&gt;
+            &lt;td&gt;&lt;div&gt;&lt;span&gt;3&lt;/span&gt;&lt;/div&gt;&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+            &lt;td&gt;&lt;div&gt;&lt;span&gt;4&lt;/span&gt;&lt;/div&gt;&lt;/td&gt;
+            &lt;td&gt;&lt;div&gt;&lt;span&gt;5&lt;/span&gt;&lt;/div&gt;&lt;/td&gt;
+            &lt;td&gt;&lt;div&gt;&lt;span&gt;6&lt;/span&gt;&lt;/div&gt;&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+            &lt;td&gt;&lt;div&gt;&lt;span&gt;7&lt;/span&gt;&lt;/div&gt;&lt;/td&gt;
+            &lt;td&gt;&lt;div&gt;&lt;span&gt;8&lt;/span&gt;&lt;/div&gt;&lt;/td&gt;
+            &lt;td&gt;&lt;div&gt;&lt;span&gt;9&lt;/span&gt;&lt;/div&gt;&lt;/td&gt;
+        &lt;/tr&gt;
+    &lt;/table&gt;
+&lt;/div&gt;
+</code></pre>
+
+<p>css:</p>
+
+<pre><code>*{
+    margin:0;
+    padding: 0;
+}
+table{
+    border-collapse: collapse;
+}
+#test2 td{
+    width: 50px;
+    height: 50px;
+    background: #eee;
+    border: 5px solid #00f;
+    text-align: center;
+    vertical-align: top;
+}
+#test2 td div{
+    position:relative;
+    width: 50px;
+    height: 50px;
+}
+#test2 td div span{
+    color: #090;
+    display:block;
+    width: 50px;
+    height: 50px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    line-height: 50px;
+}
+#test2 td div span:hover{
+    border: 5px solid #f00;
+    margin-left: -5px;
+    margin-top: -5px;
+}
+</code></pre>
+
+<p>OK，效果达成！         <br/>
+<img src="/assets/blogImg/jiugongge7.jpg" alt="最终完成的效果" />    <br/>
+可以猛点这里看看<a href="/assets/demo/jiugongge_demo.html">demo</a>。</p>
+
+<p><strong>最后吐槽，不对，总结一下下：</strong></p>
+
+<pre><code>* 先到IE上去测，再转到其它浏览器，以少走弯路，这叫擒贼先擒王-_-!；        
+* win8的metro布局最近挺流行的，有时候table比div好用；          
+* IE君，你真是……此处省略1024个字                
+</code></pre>
+
+<p>这个系列打算写两篇文章，下一篇介绍另外一种更简洁的方法。:)</p>
+]]></content>
+  </entry>
+  
+</feed>

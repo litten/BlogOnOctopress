@@ -1,0 +1,8 @@
+{% capture tags %}{% if post %}{{ post.key}}{% else %}{{ page.key}}{% endif %}{% endcapture %}
+{% unless tags == '0' %}
+{% if post %}
+	{{ post.key}}
+{% else %}
+	{{ page.key}}
+{% endif %}
+{% endunless %}

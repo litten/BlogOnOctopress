@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: 杂谈 | Litten's Blog]]></title>
+  <link href="http://litten.github.com/blog/categories/za-tan/atom.xml" rel="self"/>
+  <link href="http://litten.github.com/"/>
+  <updated>2013-09-21T20:50:30+08:00</updated>
+  <id>http://litten.github.com/</id>
+  <author>
+    <name><![CDATA[Litten]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[圣诞到了，帮修改一个头像]]></title>
+    <link href="http://litten.github.com/blog/2012/12/19/a-chrismas-ico/"/>
+    <updated>2012-12-19T14:48:00+08:00</updated>
+    <id>http://litten.github.com/blog/2012/12/19/a-chrismas-ico</id>
+    <content type="html"><![CDATA[<p><img src="/assets/blogImg/xmas_ico0.jpg" alt="ico原来的样子" /></p>
+
+<blockquote><p>帮忙把这只狐狸塞到圣诞袜子里或者带上圣诞帽~~~~ ——鱼头</p></blockquote>
+
+<!-- more -->
+
+
+<p>鱼头君，我终于做好了！花了我整整……好吧，其实是一直偷懒没做我就承认了。        <br/>
+按照你的要求，弄成这样的：          <br/>
+<img src="/assets/blogImg/xmas_ico1.jpg" alt="狐狸妹纸太大我塞不下-_-!" />      <br/>
+或者这样的：             <br/>
+<img src="/assets/blogImg/xmas_ico2.jpg" alt="圣诞帽的狐狸妹纸" />          <br/>
+其实我最喜欢的是这样的：            <br/>
+<img src="/assets/blogImg/xmas_ico3.jpg" alt="呆萌傻缺才是我得菜好么" /></p>
+
+<p><strong>Happy Chrismas!</strong></p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Hello World]]></title>
+    <link href="http://litten.github.com/blog/2012/12/13/hello-world/"/>
+    <updated>2012-12-13T01:39:00+08:00</updated>
+    <id>http://litten.github.com/blog/2012/12/13/hello-world</id>
+    <content type="html"><![CDATA[<p>在Winiex的推荐和帮助下，这个octopress博客终于搭建起来了。</p>
+
+<p>折腾了两天多，在github page上看到自己的博客加载下来时，突然有种错综复杂的恍惚感。是的，它不是qq空间，不是新浪博客，不是豆瓣小站，也不是贴吧。它更像是属于自己的一块小小的领地，因而我满足于这种归属感。我愿在上面安静劳作。</p>
+
+<p>一个农民，通过自身努力终于分到了一块地，不再需要在地主的土地上创造流量价值时，于是翻身作主的他可以宣告说：Hello World。当然这个农民确切来说是个码农。</p>
+
+<p>感谢Zespia提供的slash主题。我很喜欢这种色调。</p>
+]]></content>
+  </entry>
+  
+</feed>

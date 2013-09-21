@@ -1,0 +1,4 @@
+User-agent: *
+Disallow: 
+
+Sitemap: http://litten.github.com/sitemap.xml 

@@ -1,0 +1,60 @@
+<div id="tagsBox">
+</div>
+<script type="text/javascript">
+	if(window.localStorage){
+		if(localStorage.getItem("checked")=="true"){
+			$('#myonoffswitch')[0].checked = 'checked';
+			$('#tagsBox').css({"height":"22px","padding":"12px 0"});
+		}else{
+			$('#myonoffswitch')[0].checked = false;
+		}
+	}
+	$('#myonoffswitch').click(function(){
+		if($('#myonoffswitch').attr("checked")){
+			$('#tagsBox').animate({"height":"22px","padding":"12px 0"},"fast");
+			if(window.localStorage){
+				localStorage.setItem("checked",true);
+			}
+		}else{
+			$('#tagsBox').animate({"height":"0","padding":"0"},"fast");
+			if(window.localStorage){
+				localStorage.setItem("checked",false);
+			}
+		}
+	});
+	function arrSort(data){
+		var valArr = [],couArr=[];
+		var len = data.length;
+		for(var i=0;i<len;i++){
+			var splArr = data[i].split(',');
+			valArr = valArr.concat(splArr);
+		}
+		var nary=valArr.sort(); 
+		console.log(nary);
+		for(var i=0;i<nary.length;){
+			var j=1;
+			while(nary[i]==nary[i+j]){
+				j++;
+			}
+			i=i+j;
+			var val = nary[i-1];
+			var cou = j;
+			var domA = $('<a href="#">'+val+'</a>');
+			var domSpan = $('<span>('+cou+')</span>');
+			domA[0].href = "{{ root_url }}/blog/categories/"+val+"/";
+			domA.append(domSpan);
+			$('#tagsBox').append(domA);
+		}
+	}
+	$.ajax({
+	    url: "{{ root_url }}/search.xml",
+	    dataType: "xml",
+	    success: function(xmlResponse) {
+	    	var arr = [];
+	      	var data = $("article", xmlResponse).map(function() {
+	        	return([$("tag", this).text()]);
+	      	}).get();
+	      	arrSort(data);
+	    }
+	});
+</script>

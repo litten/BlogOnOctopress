@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: 主题 | Litten's Blog]]></title>
+  <link href="http://litten.github.com/blog/categories/zhu-ti/atom.xml" rel="self"/>
+  <link href="http://litten.github.com/"/>
+  <updated>2013-09-21T20:50:30+08:00</updated>
+  <id>http://litten.github.com/</id>
+  <author>
+    <name><![CDATA[Litten]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Blog主题更新-1.0]]></title>
+    <link href="http://litten.github.com/blog/2012/12/16/theme-update1-dot-0/"/>
+    <updated>2012-12-16T15:16:00+08:00</updated>
+    <id>http://litten.github.com/blog/2012/12/16/theme-update1-dot-0</id>
+    <content type="html"><![CDATA[<p>这次的主题更新重点放在<strong>功能的完善与优化</strong>上，以下是本次（<code>1.0</code>）的更新内容：</p>
+
+<h3>更新记录</h3>
+
+<hr />
+
+<ul>
+<li>1.0
+
+<ul>
+<li><strong>新增</strong> &ndash; 安装<a href="https://github.com/tommy351/Octopress-Theme-Slash">slash</a>主题</li>
+<li><strong>新增</strong> &ndash; “新浪微博”按钮</li>
+<li><strong>新增</strong> &ndash; <a href="http://duoshuo.com/">多说</a>第三方评论平台</li>
+<li><strong>新增</strong> &ndash; 站点静态搜索</li>
+<li><strong>新增</strong> &ndash; <a href="http://www.jiathis.com/">jiathis</a>分享按钮</li>
+<li><strong>新增</strong> &ndash; 右上角tags开关按钮，以及tags板块</li>
+<li><strong>新增</strong> &ndash; 代码高亮显示</li>
+<li><strong>修改</strong> &ndash; 将“RSS订阅”按钮链接的xml文件改成feedsky中转页面</li>
+<li><strong>修改</strong> &ndash; 精简原主题代码</li>
+<li><strong>移除</strong> &ndash; 取消默认的google搜索</li>
+<li><strong>移除</strong> &ndash; 取消<a href="http://www.addthis.com/">addthis</a>分享按钮</li>
+<li><strong>移除</strong> &ndash; 取消默认第三方评论<a href="http://disqus.com/">disqus</a></li>
+</ul>
+</li>
+</ul>
+
+]]></content>
+  </entry>
+  
+</feed>
