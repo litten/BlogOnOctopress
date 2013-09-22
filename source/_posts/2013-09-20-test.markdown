@@ -1,0 +1,9 @@
+---
+layout: post
+title: "test"
+date: 2013-09-20 10:55
+comments: true
+categories: "js"
+key: "15"
+---       
+no you are wrong

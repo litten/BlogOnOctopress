@@ -2,6 +2,13 @@
 <articles>
 	
 	<article>
+		<title>test</title>
+		<url>http://litten.github.io/blog/2013/09/20/test/</url>
+		<date>2013-09-20</date>
+		<tag>js</tag>
+	</article>
+	
+	<article>
 		<title>网易“聚合阅读”布局的实现</title>
 		<url>http://litten.github.io/blog/2013/05/03/my-news-reader-box/</url>
 		<date>2013-05-03</date>
